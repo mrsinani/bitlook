@@ -1,25 +1,11 @@
 
 import React from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import MetricCard from '@/components/dashboard/MetricCard';
-import LineChart from '@/components/dashboard/charts/LineChart';
-import BarChart from '@/components/dashboard/charts/BarChart';
-import PieChart from '@/components/dashboard/charts/PieChart';
-import GaugeChart from '@/components/dashboard/charts/GaugeChart';
-import NewsFeed from '@/components/dashboard/NewsFeed';
-import ChatbotUI from '@/components/dashboard/ChatbotUI';
-import CountdownTimer from '@/components/dashboard/CountdownTimer';
-import NetworkStatsCard from '@/components/dashboard/NetworkStatsCard';
-import {
-  Bitcoin,
-  CircleDollarSign,
-  Database,
-  ArrowUpRight,
-  GaugeCircle,
-  Zap,
-  ArrowRight,
-  Network
-} from 'lucide-react';
+import LiveMetricsSection from '@/components/dashboard/sections/LiveMetricsSection';
+import NetworkStatsSection from '@/components/dashboard/sections/NetworkStatsSection';
+import LightningNetworkSection from '@/components/dashboard/sections/LightningNetworkSection';
+import WhaleAndSentimentSection from '@/components/dashboard/sections/WhaleAndSentimentSection';
+import AIAndNewsSection from '@/components/dashboard/sections/AIAndNewsSection';
 
 const Index = () => {
   // Sample data for charts
@@ -111,113 +97,32 @@ const Index = () => {
     ],
   };
 
-  // Sample Lightning Network stats
-  const lightningNetworkStats = [
-    { name: 'Nodes', value: '17,834', icon: Network },
-    { name: 'Channels', value: '85,326', icon: ArrowRight },
-    { name: 'Capacity', value: '5,231 BTC', icon: Zap },
-    { name: 'Avg Fee Rate', value: '0.0001%', icon: CircleDollarSign },
-  ];
-
   // Date for the next Bitcoin halving (approximate)
   const nextHalvingDate = new Date('2025-04-20T00:00:00');
 
   return (
     <DashboardLayout>
       {/* Top Row - Live Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-        <MetricCard
-          title="Bitcoin Price"
-          value="$68,542"
-          change={{ value: "2.3%", positive: true }}
-          icon={Bitcoin}
-        />
-        <MetricCard
-          title="Market Cap"
-          value="$1.32T"
-          change={{ value: "1.8%", positive: true }}
-          icon={CircleDollarSign}
-        />
-        <MetricCard
-          title="Circulating Supply"
-          value="19.42M BTC"
-          icon={Database}
-        />
-        <MetricCard
-          title="Blockchain Height"
-          value="842,517"
-          change={{ value: "+72 blocks", positive: true }}
-          icon={ArrowUpRight}
-        />
-      </div>
+      <LiveMetricsSection />
       
       {/* Second Row - Network Stats */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-6">
-        <div className="lg:col-span-2">
-          <LineChart 
-            title="Bitcoin Network Gas Fees (24h)"
-            data={gasFeeChartData}
-          />
-        </div>
-        <div className="xl:col-span-1">
-          <BarChart
-            title="Transactions Per Second (TPS)"
-            data={tpsChartData}
-          />
-        </div>
-        <div className="xl:col-span-1">
-          <CountdownTimer targetDate={nextHalvingDate} />
-        </div>
-      </div>
+      <NetworkStatsSection 
+        gasFeeChartData={gasFeeChartData}
+        tpsChartData={tpsChartData}
+        nextHalvingDate={nextHalvingDate}
+      />
       
-      <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 mb-6">
-        <NetworkStatsCard
-          title="Lightning Network Stats"
-          stats={lightningNetworkStats}
-          className="xl:col-span-1"
-        />
-        <LineChart
-          title="Bitcoin Price (6 Months)"
-          data={priceChartData}
-          className="xl:col-span-3"
-        />
-      </div>
+      <LightningNetworkSection priceChartData={priceChartData} />
       
       {/* Third Row - Whale & Sentiment Data */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6 mb-6">
-        <div className="xl:col-span-1">
-          <PieChart
-            title="Whale Distribution"
-            data={whaleDistributionData}
-          />
-        </div>
-        <div className="xl:col-span-1">
-          <LineChart
-            title="Exchange Reserve"
-            data={exchangeReserveData}
-          />
-        </div>
-        <div className="xl:col-span-1">
-          <GaugeChart
-            title="Fear & Greed Index"
-            value={75}
-            min={0}
-            max={100}
-          />
-        </div>
-        <div className="xl:col-span-1">
-          <BarChart
-            title="Funding Rate"
-            data={fundingRateData}
-          />
-        </div>
-      </div>
+      <WhaleAndSentimentSection 
+        whaleDistributionData={whaleDistributionData}
+        exchangeReserveData={exchangeReserveData}
+        fundingRateData={fundingRateData}
+      />
       
       {/* Bottom Section - AI & News */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <ChatbotUI className="lg:col-span-1 min-h-[400px]" />
-        <NewsFeed className="lg:col-span-1 min-h-[400px]" />
-      </div>
+      <AIAndNewsSection />
     </DashboardLayout>
   );
 };
