@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Bitcoin, MessageSquare, Wallet } from "lucide-react";
+import { Bitcoin, Menu, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   SignInButton,
@@ -64,7 +64,7 @@ const Header = () => {
             onClick={toggleSidebar}
             aria-label="Open menu"
           >
-            <MessageSquare className="h-5 w-5" />
+            <Menu className="h-5 w-5" />
             <span className="absolute top-0 right-0 w-2 h-2 bg-bitcoin rounded-full"></span>
           </Button>
         </div>
