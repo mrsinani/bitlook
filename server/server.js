@@ -453,8 +453,15 @@ app.get("/api/bitcoin-halving", async (req, res) => {
     const daysRemaining = (minutesRemaining / (60 * 24)).toFixed(2);
 
     // Calculate estimated date of halving
-    const halvingDate = new Date();
-    halvingDate.setMinutes(halvingDate.getMinutes() + minutesRemaining);
+    // Instead of using the current time as the base for the calculation,
+    // we'll use a more stable approach based on average block time
+    // from the Bitcoin genesis block (Jan 3, 2009)
+    const genesisDate = new Date('2009-01-03T18:15:05Z');
+    const blocksSinceGenesis = currentHeight;
+    const minutesSinceGenesis = blocksSinceGenesis * minutesPerBlock;
+    
+    const halvingDate = new Date(genesisDate);
+    halvingDate.setMinutes(halvingDate.getMinutes() + minutesSinceGenesis + minutesRemaining);
 
     // Current halving epoch (0-indexed)
     const currentEpoch = Math.floor(currentHeight / halvingInterval);

@@ -126,13 +126,15 @@ const HalvingCountdown = ({
           </span>
           <Button
             variant="ghost"
-            size="icon"
+            size="sm"
             onClick={handleRefresh}
             disabled={loading || isRefreshing}
+            className="flex items-center text-xs"
           >
             <RefreshCw
-              className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`}
+              className={`h-4 w-4 mr-1 ${isRefreshing ? "animate-spin" : ""}`}
             />
+            Update Blocks
           </Button>
         </CardTitle>
         <CardDescription className="flex items-center">
