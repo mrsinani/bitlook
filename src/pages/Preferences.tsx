@@ -20,10 +20,12 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
+import { useTheme } from "@/components/ThemeProvider";
 import {
   getUserPreferences,
   saveUserPreferences,
   defaultPreferences,
+  Theme,
 } from "@/lib/userPreferences";
 
 // Define a type for dashboard visibility settings
@@ -53,6 +55,7 @@ export const DashboardVisibilityContext = React.createContext<{
 const Preferences = () => {
   const { user } = useUser();
   const { toast } = useToast();
+  const { theme, setTheme } = useTheme();
   const [visibility, setVisibility] = useState<DashboardVisibility>(
     defaultPreferences.dashboardVisibility
   );
@@ -66,6 +69,7 @@ const Preferences = () => {
       try {
         const preferences = await getUserPreferences(user.id);
         setVisibility(preferences.dashboardVisibility);
+        // Theme is handled by next-themes via localStorage
       } catch (error) {
         console.error("Failed to load preferences:", error);
       }
@@ -74,11 +78,17 @@ const Preferences = () => {
     loadUserPreferences();
   }, [user?.id]);
 
+  // Handle theme change directly with next-themes
+  const handleThemeChange = (value: string) => {
+    setTheme(value);
+  };
+
   const handleSavePreferences = async () => {
     if (!user?.id) return;
 
     setIsLoading(true);
     try {
+      // Only save visibility settings to database
       const success = await saveUserPreferences(user.id, {
         dashboardVisibility: visibility,
       });
@@ -144,7 +154,7 @@ const Preferences = () => {
                       Choose your preferred theme
                     </p>
                   </div>
-                  <Select defaultValue="system">
+                  <Select value={theme} onValueChange={handleThemeChange}>
                     <SelectTrigger className="w-40">
                       <SelectValue placeholder="Select theme" />
                     </SelectTrigger>

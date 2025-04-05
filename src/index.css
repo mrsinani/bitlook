@@ -34,6 +34,36 @@
 
     --radius: 0.75rem;
   }
+
+  .light {
+    --background: 0 0% 100%;
+    --foreground: 215 25% 10%;
+
+    --card: 0 0% 98%;
+    --card-foreground: 215 25% 10%;
+
+    --popover: 0 0% 98%;
+    --popover-foreground: 215 25% 10%;
+
+    --primary: 32 95% 54%; /* Bitcoin orange */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 32 95% 54%; /* Bitcoin orange for positive values */
+    --secondary-foreground: 215 23% 7%;
+
+    --muted: 0 0% 92%;
+    --muted-foreground: 215 25% 40%;
+
+    --accent: 210 20% 92%;
+    --accent-foreground: 215 25% 10%;
+
+    --destructive: 0 84% 60%; /* Red for negative values */
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 32 95% 54%;
+  }
 }
 
 @layer base {

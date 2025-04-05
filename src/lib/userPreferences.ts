@@ -1,9 +1,13 @@
 import { supabase } from "./supabase";
 import { DashboardVisibility } from "@/pages/Preferences";
 
+// Type for theme preference
+export type Theme = "light" | "dark" | "system";
+
 // Type for user preferences
 export interface UserPreferences {
   dashboardVisibility: DashboardVisibility;
+  theme?: Theme; // Make theme optional since it's stored in localStorage
   // Add more preference types here as needed
 }
 
@@ -16,6 +20,7 @@ export const defaultPreferences: UserPreferences = {
     whaleAndSentiment: true,
     aiAndNews: true,
   },
+  theme: "system", // Default theme, but not saved to database
 };
 
 /**
@@ -41,7 +46,10 @@ export async function getUserPreferences(
 
     console.log("Retrieved preferences:", data);
     return data
-      ? { dashboardVisibility: data.dashboard_visibility }
+      ? {
+          dashboardVisibility: data.dashboard_visibility,
+          // Theme is handled by localStorage now
+        }
       : defaultPreferences;
   } catch (err) {
     console.error("Error in getUserPreferences:", err);
@@ -61,6 +69,7 @@ export async function saveUserPreferences(
   console.log("Saving preferences for user:", userId, preferences);
 
   try {
+    // Only include dashboard visibility for database
     const payload = {
       user_id: userId,
       dashboard_visibility: preferences.dashboardVisibility,
