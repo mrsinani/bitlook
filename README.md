@@ -11,7 +11,7 @@ We wanted to build a tool that **centralizes Bitcoin intelligence**—from real-
 Bitlook centralizes Bitcoin insights by offering:
 
 - Real-time blockchain and Lightning Network analytics
-- Lightning wallet integration for instant transactions 
+- Lightning wallet integration for instant transactions
 - Curated news and updates relevant to Bitcoin
 - AI-powered chatbot for on-demand Bitcoin education
 
@@ -19,12 +19,12 @@ Bitlook centralizes Bitcoin insights by offering:
 
 We used a modern full-stack approach:
 
-- **Vite** with **React** for a dynamic frontend 
+- **Vite** with **React** for a dynamic frontend
 - **TypeScript** and **Tailwind CSS** for styling and type safety
-- **Direct API calls** for real-time blockchain data updates 
-- Lightning Network APIs for statistics integration 
-- Standard API calls for news aggregation 
-- Chatbot UI component 
+- **Direct API calls** for real-time blockchain data updates
+- Lightning Network APIs for statistics integration
+- Standard API calls for news aggregation
+- Chatbot UI component
 
 ## 🚧 Challenges we ran into
 
@@ -52,7 +52,6 @@ We used a modern full-stack approach:
 - Implement AI capabilities for predictive Bitcoin analytics
 - Add more educational content and interactive learning tools
 - Integrate actual Lightning wallet functionality
-- Implement NoStir for decentralized messaging
 - Launch mobile support and browser extensions
 - Explore monetization through subscriptions and partnerships
 
