@@ -137,52 +137,175 @@ app.get("/api/bitcoin-tps", async (req, res) => {
   }
 });
 
-// Bitcoin market cap endpoint (using CoinGecko API)
+// Bitcoin market data endpoint (using Blockchain.com API + Mempool price)
 app.get("/api/bitcoin-market-data", async (req, res) => {
   try {
-    const response = await axios.get(
-      "https://api.coingecko.com/api/v3/coins/bitcoin?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=false"
+    console.log("Fetching Bitcoin market data from Blockchain.com...");
+    const startTime = Date.now();
+    
+    // Get blockchain stats from Blockchain.com API
+    const blockchainResponse = await axios.get(
+      "https://api.blockchain.info/stats",
+      { 
+        timeout: 10000, // 10 second timeout
+        headers: {
+          'Accept': 'application/json'
+        }
+      }
     );
     
+    // Get current Bitcoin price from mempool.space
+    const priceResponse = await axios.get(
+      "https://mempool.space/api/v1/prices", 
+      { timeout: 5000 }
+    );
+    
+    const endTime = Date.now();
+    console.log(`APIs responded in ${endTime - startTime}ms`);
+    
+    // Check if we have the expected data
+    if (!blockchainResponse.data || !priceResponse.data) {
+      console.error("Unexpected response format:", {
+        blockchain: blockchainResponse.data,
+        price: priceResponse.data
+      });
+      throw new Error("Invalid response format from APIs");
+    }
+    
+    // Extract data from responses
+    const circulatingSupply = blockchainResponse.data.totalbc / 100000000; // Convert sats to BTC
+    const priceUSD = priceResponse.data.USD;
+    
+    // Calculate market cap (price * circulating supply)
+    const marketCap = priceUSD * circulatingSupply;
+    
+    // Get 24h volume from the stats (in USD)
+    const volume24h = blockchainResponse.data.estimated_transaction_volume_usd;
+    
     const marketData = {
-      price: response.data.market_data.current_price.usd,
-      market_cap: response.data.market_data.market_cap.usd,
-      total_volume: response.data.market_data.total_volume.usd,
-      circulating_supply: response.data.market_data.circulating_supply,
-      max_supply: response.data.market_data.max_supply,
-      ath: response.data.market_data.ath.usd,
-      ath_date: response.data.market_data.ath_date.usd,
-      price_change_percentage_24h: response.data.market_data.price_change_percentage_24h,
-      price_change_percentage_7d: response.data.market_data.price_change_percentage_7d,
-      price_change_percentage_30d: response.data.market_data.price_change_percentage_30d,
+      price: priceUSD,
+      market_cap: marketCap,
+      total_volume: volume24h,
+      circulating_supply: circulatingSupply,
+      max_supply: 21000000, // Bitcoin's fixed supply cap
+      price_change_percentage_24h: 0, // Not available in this API
+      price_change_percentage_7d: 0, // Not available in this API 
       time: Math.floor(Date.now() / 1000)
     };
     
+    console.log("Bitcoin market data successfully fetched");
     res.status(200).json(marketData);
   } catch (error) {
     console.error("Error fetching Bitcoin market data:", error);
-    res.status(500).json({ error: "Failed to fetch Bitcoin market data" });
+    
+    // Provide more detailed error information
+    const errorDetails = {
+      error: "Failed to fetch Bitcoin market data",
+      message: error.message,
+      code: error.code || 'UNKNOWN'
+    };
+    
+    if (error.response) {
+      errorDetails.statusCode = error.response.status;
+      errorDetails.statusText = error.response.statusText;
+      errorDetails.data = error.response.data;
+    }
+    
+    console.error("Detailed error:", JSON.stringify(errorDetails, null, 2));
+    
+    // Provide fallback data
+    const fallbackData = {
+      price: 65000,
+      market_cap: 1350000000000,
+      total_volume: 25000000000,
+      circulating_supply: 19500000,
+      max_supply: 21000000,
+      price_change_percentage_24h: 0,
+      price_change_percentage_7d: 0,
+      time: Math.floor(Date.now() / 1000),
+      isFallback: true
+    };
+    
+    // Send fallback data with a 200 status but include error info
+    res.status(200).json({
+      ...fallbackData,
+      _error: "Using fallback data due to API issues"
+    });
   }
 });
 
-// Bitcoin circulating supply endpoint
+// Bitcoin circulating supply endpoint (using Blockchain.com API)
 app.get("/api/bitcoin-supply", async (req, res) => {
   try {
+    console.log("Fetching Bitcoin supply data from Blockchain.com...");
+    const startTime = Date.now();
+    
     const response = await axios.get(
-      "https://api.coingecko.com/api/v3/coins/bitcoin?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=false"
+      "https://api.blockchain.info/stats",
+      { 
+        timeout: 10000, // 10 second timeout
+        headers: {
+          'Accept': 'application/json'
+        }
+      }
     );
     
+    const endTime = Date.now();
+    console.log(`Blockchain.com API responded in ${endTime - startTime}ms`);
+    
+    // Check if we have the expected data
+    if (!response.data || !response.data.totalbc) {
+      console.error("Unexpected response format from Blockchain.com:", response.data);
+      throw new Error("Invalid response format from Blockchain.com API");
+    }
+    
+    // Convert satoshis to BTC
+    const circulatingSupply = response.data.totalbc / 100000000;
+    
+    // Bitcoin's max supply is fixed at 21 million
+    const maxSupply = 21000000;
+    
     const supplyData = {
-      circulating_supply: response.data.market_data.circulating_supply,
-      max_supply: response.data.market_data.max_supply,
-      percent_mined: (response.data.market_data.circulating_supply / response.data.market_data.max_supply * 100).toFixed(2),
+      circulating_supply: circulatingSupply,
+      max_supply: maxSupply,
+      percent_mined: (circulatingSupply / maxSupply * 100).toFixed(2),
       time: Math.floor(Date.now() / 1000)
     };
     
+    console.log("Bitcoin supply data successfully fetched");
     res.status(200).json(supplyData);
   } catch (error) {
     console.error("Error fetching Bitcoin supply data:", error);
-    res.status(500).json({ error: "Failed to fetch Bitcoin supply data" });
+    
+    // Provide more detailed error information
+    const errorDetails = {
+      error: "Failed to fetch Bitcoin supply data",
+      message: error.message,
+      code: error.code || 'UNKNOWN'
+    };
+    
+    if (error.response) {
+      errorDetails.statusCode = error.response.status;
+      errorDetails.statusText = error.response.statusText;
+      errorDetails.data = error.response.data;
+    }
+    
+    console.error("Detailed error:", JSON.stringify(errorDetails, null, 2));
+    
+    // Provide fallback data
+    const fallbackData = {
+      circulating_supply: 19500000,
+      max_supply: 21000000,
+      percent_mined: 92.85,
+      time: Math.floor(Date.now() / 1000),
+      isFallback: true
+    };
+    
+    // Send fallback data with a 200 status but include error info
+    res.status(200).json({
+      ...fallbackData,
+      _error: "Using fallback data due to API issues"
+    });
   }
 });
 
