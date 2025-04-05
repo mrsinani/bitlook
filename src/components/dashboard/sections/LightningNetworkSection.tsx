@@ -1,8 +1,7 @@
-
 import React from 'react';
-import NetworkStatsCard from '@/components/dashboard/NetworkStatsCard';
 import LineChart from '@/components/dashboard/charts/LineChart';
-import { Network, ArrowRight, Zap, CircleDollarSign } from 'lucide-react';
+import LightningStats from '@/components/LightningStats';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 interface LightningNetworkSectionProps {
   priceChartData: any;
@@ -11,21 +10,23 @@ interface LightningNetworkSectionProps {
 const LightningNetworkSection: React.FC<LightningNetworkSectionProps> = ({
   priceChartData
 }) => {
-  // Lightning Network stats
-  const lightningNetworkStats = [
-    { name: 'Nodes', value: '17,834', icon: Network },
-    { name: 'Channels', value: '85,326', icon: ArrowRight },
-    { name: 'Capacity', value: '5,231 BTC', icon: Zap },
-    { name: 'Avg Fee Rate', value: '0.0001%', icon: CircleDollarSign },
-  ];
+  // Fallback UI for metric cards when they error
+  const metricErrorFallback = (title: string) => (
+    <div className="w-full h-full p-4 bg-white rounded-lg border shadow-sm">
+      <h3 className="font-medium text-lg mb-2">{title}</h3>
+      <div className="text-red-500 text-sm">
+        Failed to load data. Please check your connection and try again.
+      </div>
+    </div>
+  );
 
   return (
     <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 mb-6">
-      <NetworkStatsCard
-        title="Lightning Network Stats"
-        stats={lightningNetworkStats}
-        className="xl:col-span-1"
-      />
+      <div className="xl:col-span-1">
+        <ErrorBoundary fallback={metricErrorFallback("Lightning Network")}>
+          <LightningStats refreshInterval={300000} />
+        </ErrorBoundary>
+      </div>
       <LineChart
         title="Bitcoin Price (6 Months)"
         data={priceChartData}

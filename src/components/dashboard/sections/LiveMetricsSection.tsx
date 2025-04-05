@@ -1,34 +1,45 @@
-
 import React from 'react';
 import MetricCard from '@/components/dashboard/MetricCard';
 import { Bitcoin, CircleDollarSign, Database, ArrowUpRight } from 'lucide-react';
+import BitcoinPrice from '@/components/BitcoinPrice';
+import MarketCap from '@/components/MarketCap';
+import CirculatingSupply from '@/components/CirculatingSupply';
+import BlockchainHeight from '@/components/BlockchainHeight';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 const LiveMetricsSection = () => {
+  // Fallback UI for metric cards when they error
+  const metricErrorFallback = (title: string) => (
+    <div className="w-full h-full p-4 bg-white rounded-lg border shadow-sm">
+      <h3 className="font-medium text-lg mb-2">{title}</h3>
+      <div className="text-red-500 text-sm">
+        Failed to load data. Please check your connection and try again.
+      </div>
+    </div>
+  );
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-      <MetricCard
-        title="Bitcoin Price"
-        value="$68,542"
-        change={{ value: "2.3%", positive: true }}
-        icon={Bitcoin}
-      />
-      <MetricCard
-        title="Market Cap"
-        value="$1.32T"
-        change={{ value: "1.8%", positive: true }}
-        icon={CircleDollarSign}
-      />
-      <MetricCard
-        title="Circulating Supply"
-        value="19.42M BTC"
-        icon={Database}
-      />
-      <MetricCard
-        title="Blockchain Height"
-        value="842,517"
-        change={{ value: "+72 blocks", positive: true }}
-        icon={ArrowUpRight}
-      />
+      <div className="col-span-1">
+        <ErrorBoundary fallback={metricErrorFallback("Bitcoin Price")}>
+          <BitcoinPrice refreshInterval={30000} />
+        </ErrorBoundary>
+      </div>
+      <div className="col-span-1">
+        <ErrorBoundary fallback={metricErrorFallback("Market Cap")}>
+          <MarketCap refreshInterval={30000} />
+        </ErrorBoundary>
+      </div>
+      <div className="col-span-1">
+        <ErrorBoundary fallback={metricErrorFallback("Circulating Supply")}>
+          <CirculatingSupply refreshInterval={30000} />
+        </ErrorBoundary>
+      </div>
+      <div className="col-span-1">
+        <ErrorBoundary fallback={metricErrorFallback("Blockchain Height")}>
+          <BlockchainHeight refreshInterval={30000} />
+        </ErrorBoundary>
+      </div>
     </div>
   );
 };

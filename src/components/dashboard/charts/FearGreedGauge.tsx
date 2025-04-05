@@ -31,7 +31,7 @@ const FearGreedGauge: React.FC<FearGreedGaugeProps> = ({
   };
 
   return (
-    <div className={cn("data-card flex flex-col", className)}>
+    <div className={cn("flex flex-col", className)}>
       <h3 className="card-heading mb-4">{title}</h3>
 
       <div

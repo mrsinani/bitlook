@@ -89,23 +89,6 @@ const Index = () => {
     ],
   };
 
-  const fundingRateData = {
-    labels: ["Binance", "FTX", "Bybit", "OKX", "Deribit"],
-    datasets: [
-      {
-        label: "Funding Rate (%)",
-        data: [0.01, -0.005, 0.02, -0.01, 0.015],
-        backgroundColor: [
-          "#F7931A",
-          "#FF6B6B",
-          "#F7931A",
-          "#FF6B6B",
-          "#F7931A",
-        ],
-      },
-    ],
-  };
-
   // Date for the next Bitcoin halving (approximate)
   const nextHalvingDate = new Date("2025-04-20T00:00:00");
 
@@ -154,7 +137,6 @@ const Index = () => {
       <WhaleAndSentimentSection
         whaleDistributionData={whaleDistributionData}
         exchangeReserveData={exchangeReserveData}
-        fundingRateData={fundingRateData}
       />
 
       {/* Bottom Section - AI & News */}

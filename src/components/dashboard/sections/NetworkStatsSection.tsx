@@ -1,36 +1,41 @@
-
 import React from 'react';
-import LineChart from '@/components/dashboard/charts/LineChart';
-import BarChart from '@/components/dashboard/charts/BarChart';
-import CountdownTimer from '@/components/dashboard/CountdownTimer';
+import GasFees from '@/components/GasFees';
+import TransactionsPerSecond from '@/components/TransactionsPerSecond';
+import HalvingCountdown from '@/components/HalvingCountdown';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
-interface NetworkStatsSectionProps {
-  gasFeeChartData: any;
-  tpsChartData: any;
-  nextHalvingDate: Date;
-}
+interface NetworkStatsSectionProps {}
 
-const NetworkStatsSection: React.FC<NetworkStatsSectionProps> = ({
-  gasFeeChartData,
-  tpsChartData,
-  nextHalvingDate
-}) => {
+const NetworkStatsSection: React.FC<NetworkStatsSectionProps> = () => {
+  // Fallback UI for metric cards when they error
+  const metricErrorFallback = (title: string) => (
+    <div className="w-full h-full p-4 bg-white rounded-lg border shadow-sm">
+      <h3 className="font-medium text-lg mb-2">{title}</h3>
+      <div className="text-red-500 text-sm">
+        Failed to load data. Please check your connection and try again.
+      </div>
+    </div>
+  );
+
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-6">
-      <div className="lg:col-span-2">
-        <LineChart 
-          title="Bitcoin Network Gas Fees (24h)"
-          data={gasFeeChartData}
-        />
-      </div>
-      <div className="xl:col-span-1">
-        <BarChart
-          title="Transactions Per Second (TPS)"
-          data={tpsChartData}
-        />
-      </div>
-      <div className="xl:col-span-1">
-        <CountdownTimer targetDate={nextHalvingDate} />
+    <div className="space-y-6 mb-6">
+      {/* Live Network Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="col-span-1">
+          <ErrorBoundary fallback={metricErrorFallback("Gas Fees")}>
+            <GasFees refreshInterval={30000} />
+          </ErrorBoundary>
+        </div>
+        <div className="col-span-1">
+          <ErrorBoundary fallback={metricErrorFallback("TPS")}>
+            <TransactionsPerSecond refreshInterval={30000} />
+          </ErrorBoundary>
+        </div>
+        <div className="col-span-1">
+          <ErrorBoundary fallback={metricErrorFallback("Halving Countdown")}>
+            <HalvingCountdown refreshInterval={300000} />
+          </ErrorBoundary>
+        </div>
       </div>
     </div>
   );
