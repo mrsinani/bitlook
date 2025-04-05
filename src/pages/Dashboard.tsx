@@ -10,6 +10,8 @@ import { X } from "lucide-react";
 import { DashboardVisibility } from "./Preferences";
 import { getUserPreferences, defaultPreferences } from "@/lib/userPreferences";
 import useBitcoinHistory from "@/hooks/useBitcoinHistory";
+import { AutoRefreshProvider } from "@/context/AutoRefreshContext";
+import AutoRefreshStatus from "@/components/dashboard/AutoRefreshStatus";
 
 const Dashboard = () => {
   const { user } = useUser();
@@ -139,50 +141,57 @@ const Dashboard = () => {
 
   return (
     <DashboardLayout>
-      {showWelcomeBanner && (
-        <div className="mb-6 p-4 bg-card rounded-lg border border-border relative">
-          <button
-            onClick={() => setShowWelcomeBanner(false)}
-            className="absolute top-3 right-3 text-muted-foreground hover:text-foreground"
-            aria-label="Close welcome banner"
-          >
-            <X size={18} />
-          </button>
-          <h2 className="text-2xl font-bold">
-            Welcome, {user?.firstName || "User"}
-          </h2>
-          <p className="text-muted-foreground">
-            This is your personal dashboard with detailed Bitcoin analytics
-          </p>
+      <AutoRefreshProvider defaultRefreshInterval={5000}>
+        {showWelcomeBanner && (
+          <div className="mb-6 p-4 bg-card rounded-lg border border-border relative">
+            <button
+              onClick={() => setShowWelcomeBanner(false)}
+              className="absolute top-3 right-3 text-muted-foreground hover:text-foreground"
+              aria-label="Close welcome banner"
+            >
+              <X size={18} />
+            </button>
+            <h2 className="text-2xl font-bold">
+              Welcome, {user?.firstName || "User"}
+            </h2>
+            <p className="text-muted-foreground">
+              This is your personal dashboard with detailed Bitcoin analytics
+            </p>
+          </div>
+        )}
+
+        {/* Auto-refresh status indicator */}
+        <div className="mb-4 flex justify-end">
+          <AutoRefreshStatus />
         </div>
-      )}
 
-      <div className={getGridClasses()}>
-        {/* Top Row - Live Metrics */}
-        {visibility.liveMetrics && <LiveMetricsSection />}
+        <div className={getGridClasses()}>
+          {/* Top Row - Live Metrics */}
+          {visibility.liveMetrics && <LiveMetricsSection />}
 
-        {/* Second Row - Network Stats */}
-        {visibility.networkStats && <NetworkStatsSection />}
+          {/* Second Row - Network Stats */}
+          {visibility.networkStats && <NetworkStatsSection />}
 
-        {/* Lightning Network Section */}
-        {visibility.lightningNetwork && (
-          <LightningNetworkSection
-            priceChartData={bitcoinHistoryChartData}
-            isLoading={bitcoinHistoryLoading}
-          />
-        )}
+          {/* Lightning Network Section */}
+          {visibility.lightningNetwork && (
+            <LightningNetworkSection
+              priceChartData={bitcoinHistoryChartData}
+              isLoading={bitcoinHistoryLoading}
+            />
+          )}
 
-        {/* Third Row - Whale & Sentiment Data */}
-        {visibility.whaleAndSentiment && (
-          <WhaleAndSentimentSection
-            whaleDistributionData={whaleDistributionData}
-            exchangeReserveData={exchangeReserveData}
-          />
-        )}
+          {/* Third Row - Whale & Sentiment Data */}
+          {visibility.whaleAndSentiment && (
+            <WhaleAndSentimentSection
+              whaleDistributionData={whaleDistributionData}
+              exchangeReserveData={exchangeReserveData}
+            />
+          )}
 
-        {/* Bottom Section - AI & News */}
-        {visibility.aiAndNews && <AIAndNewsSection />}
-      </div>
+          {/* Bottom Section - AI & News */}
+          {visibility.aiAndNews && <AIAndNewsSection />}
+        </div>
+      </AutoRefreshProvider>
     </DashboardLayout>
   );
 };

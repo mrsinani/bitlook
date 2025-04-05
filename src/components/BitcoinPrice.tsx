@@ -16,9 +16,12 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { Badge } from "./ui/badge";
+import { withAutoRefresh } from "@/hooks/withAutoRefresh";
 
 interface BitcoinPriceProps {
   refreshInterval?: number;
+  isFromCache?: boolean;
+  refetch?: (forceRefresh?: boolean) => Promise<void>;
 }
 
 const BitcoinPrice = ({ refreshInterval = 60000 }: BitcoinPriceProps) => {
@@ -90,6 +93,7 @@ const BitcoinPrice = ({ refreshInterval = 60000 }: BitcoinPriceProps) => {
             <Badge
               variant="outline"
               className="ml-2 text-amber-500 border-amber-500"
+              title="Auto-refreshing every 5 seconds"
             >
               <DatabaseIcon className="h-3 w-3 mr-1" />
               Cached
@@ -156,4 +160,5 @@ const BitcoinPrice = ({ refreshInterval = 60000 }: BitcoinPriceProps) => {
   );
 };
 
-export default BitcoinPrice;
+// Wrap with auto-refresh functionality
+export default withAutoRefresh(BitcoinPrice, "bitcoin-price");
