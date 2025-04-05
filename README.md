@@ -1,56 +1,61 @@
-# Welcome to your Lovable project
+# 🌐 About Bitlook
 
-## Project info
+## 💡 Inspiration
 
-**URL**: https://lovable.dev/projects/5085cc6f-b238-463e-a960-8a8f14c146e8
+**Bitlook** was born out of a shared frustration: Bitcoin data is scattered, overwhelming, and often too technical for everyday users. From tracking blockchain stats to accessing Lightning Network insights, we found ourselves jumping across multiple platforms, piecing together what should have been readily available in one place.
 
-## How can I edit this code?
+We wanted to build a tool that **centralizes Bitcoin intelligence**—from real-time blockchain and Lightning Network analytics to curated news and education—so users can make informed decisions faster. As Bitcoin adoption grows, especially with the expansion of the Lightning Network, there's a clear need for a **focused, Bitcoin-first dashboard** that's intuitive, powerful, and user-friendly.
 
-There are several ways of editing your application.
+## 🚀 What it does
 
-**Use Lovable**
+Bitlook centralizes Bitcoin insights by offering:
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/5085cc6f-b238-463e-a960-8a8f14c146e8) and start prompting.
+- Real-time blockchain and Lightning Network analytics
+- Lightning wallet integration for instant transactions
+- Curated news and updates relevant to Bitcoin
+- AI-powered chatbot for on-demand Bitcoin education
 
-Changes made via Lovable will be committed automatically to this repo.
+## 🛠️ How we built it
 
-**Use your preferred IDE**
+We used a modern full-stack approach:
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+- **Vite** with **React** for a dynamic frontend
+- **TypeScript** and **Tailwind CSS** for styling and type safety
+- **Direct API calls** for real-time blockchain data updates
+- Lightning Network APIs for statistics integration
+- Standard API calls for news aggregation
+- Chatbot UI component
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## 🚧 Challenges we ran into
 
-Follow these steps:
+- Managing real-time data without performance issues
+- Poor or incomplete documentation on Lightning APIs
+- UI/UX balance: presenting dense data simply
+- Training and fine-tuning the chatbot to reduce hallucinations _(challenge for future implementation)_
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+## 🏆 Accomplishments that we're proud of
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+- Built a functional dashboard with Bitcoin and Lightning Network statistics
+- Created a polished and intuitive UI that simplifies Bitcoin analytics
+- Implemented Bitcoin news integration
+- Designed a chatbot UI component
 
-# Step 3: Install the necessary dependencies.
-npm i
+## 🎓 What we learned
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+- How to integrate Bitcoin and Lightning Network data from public APIs
+- UX strategies for simplifying technical content
+- Best practices for organizing complex dashboard information
+- How to collaborate across a multidisciplinary tech team
 
-**Edit a file directly in GitHub**
+## 🔮 What's next for BitLook
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+- Implement AI capabilities for predictive Bitcoin analytics
+- Add more educational content and interactive learning tools
+- Integrate actual Lightning wallet functionality
+- Launch mobile support and browser extensions
+- Explore monetization through subscriptions and partnerships
 
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
+## Project Technical Info
 
 This project is built with:
 
@@ -59,15 +64,5 @@ This project is built with:
 - React
 - shadcn-ui
 - Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/5085cc6f-b238-463e-a960-8a8f14c146e8) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes it is!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+- Clerk authentication
+- Supabase database
