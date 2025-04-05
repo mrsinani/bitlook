@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { useUser } from "@clerk/clerk-react";
+import { useUser, useAuth } from "@clerk/clerk-react";
+import { Navigate } from "react-router-dom";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import LiveMetricsSection from "@/components/dashboard/sections/LiveMetricsSection";
 import NetworkStatsSection from "@/components/dashboard/sections/NetworkStatsSection";
@@ -11,10 +12,10 @@ import { DashboardVisibility } from "./Preferences";
 import { getUserPreferences, defaultPreferences } from "@/lib/userPreferences";
 import useBitcoinHistory from "@/hooks/useBitcoinHistory";
 import { AutoRefreshProvider } from "@/context/AutoRefreshContext";
-import AutoRefreshStatus from "@/components/dashboard/AutoRefreshStatus";
 
 const Dashboard = () => {
   const { user } = useUser();
+  const { userId } = useAuth();
   const [showWelcomeBanner, setShowWelcomeBanner] = useState(true);
   const [visibility, setVisibility] = useState<DashboardVisibility>(
     defaultPreferences.dashboardVisibility
@@ -22,6 +23,11 @@ const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const { chartData: bitcoinHistoryChartData, loading: bitcoinHistoryLoading } =
     useBitcoinHistory();
+
+  // Redirect to home if not authenticated (additional safety)
+  if (!userId) {
+    return <Navigate to="/" replace />;
+  }
 
   // Load visibility preferences from Supabase on mount
   useEffect(() => {
@@ -159,11 +165,6 @@ const Dashboard = () => {
             </p>
           </div>
         )}
-
-        {/* Auto-refresh status indicator */}
-        <div className="mb-4 flex justify-end">
-          <AutoRefreshStatus />
-        </div>
 
         <div className={getGridClasses()}>
           {/* Top Row - Live Metrics */}
