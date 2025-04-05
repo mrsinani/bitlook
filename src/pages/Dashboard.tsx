@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useUser } from "@clerk/clerk-react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import LiveMetricsSection from "@/components/dashboard/sections/LiveMetricsSection";
@@ -7,10 +7,30 @@ import LightningNetworkSection from "@/components/dashboard/sections/LightningNe
 import WhaleAndSentimentSection from "@/components/dashboard/sections/WhaleAndSentimentSection";
 import AIAndNewsSection from "@/components/dashboard/sections/AIAndNewsSection";
 import { X } from "lucide-react";
+import { DashboardVisibility } from "./Preferences";
 
 const Dashboard = () => {
   const { user } = useUser();
   const [showWelcomeBanner, setShowWelcomeBanner] = useState(true);
+  const [visibility, setVisibility] = useState<DashboardVisibility>({
+    liveMetrics: true,
+    networkStats: true,
+    lightningNetwork: true,
+    whaleAndSentiment: true,
+    aiAndNews: true,
+  });
+
+  // Load visibility preferences from localStorage on mount
+  useEffect(() => {
+    const savedVisibility = localStorage.getItem("dashboardVisibility");
+    if (savedVisibility) {
+      try {
+        setVisibility(JSON.parse(savedVisibility));
+      } catch (e) {
+        console.error("Failed to parse dashboard visibility settings", e);
+      }
+    }
+  }, []);
 
   // Sample data for charts (same as Index page)
   const priceChartData = {
@@ -110,6 +130,19 @@ const Dashboard = () => {
   // Date for the next Bitcoin halving (approximate)
   const nextHalvingDate = new Date("2025-04-20T00:00:00");
 
+  // Calculate the grid layout CSS to maintain spacing
+  // This ensures a consistent grid layout even when elements are hidden
+  const getGridClasses = () => {
+    let visibleSectionsCount = 0;
+    if (visibility.liveMetrics) visibleSectionsCount++;
+    if (visibility.networkStats) visibleSectionsCount++;
+    if (visibility.lightningNetwork) visibleSectionsCount++;
+    if (visibility.whaleAndSentiment) visibleSectionsCount++;
+    if (visibility.aiAndNews) visibleSectionsCount++;
+
+    return "space-y-6"; // Maintain consistent spacing between sections
+  };
+
   return (
     <DashboardLayout>
       {showWelcomeBanner && (
@@ -130,27 +163,36 @@ const Dashboard = () => {
         </div>
       )}
 
-      {/* Top Row - Live Metrics */}
-      <LiveMetricsSection />
+      <div className={getGridClasses()}>
+        {/* Top Row - Live Metrics */}
+        {visibility.liveMetrics && <LiveMetricsSection />}
 
-      {/* Second Row - Network Stats */}
-      <NetworkStatsSection
-        gasFeeChartData={gasFeeChartData}
-        tpsChartData={tpsChartData}
-        nextHalvingDate={nextHalvingDate}
-      />
+        {/* Second Row - Network Stats */}
+        {visibility.networkStats && (
+          <NetworkStatsSection
+            gasFeeChartData={gasFeeChartData}
+            tpsChartData={tpsChartData}
+            nextHalvingDate={nextHalvingDate}
+          />
+        )}
 
-      <LightningNetworkSection priceChartData={priceChartData} />
+        {/* Lightning Network Section */}
+        {visibility.lightningNetwork && (
+          <LightningNetworkSection priceChartData={priceChartData} />
+        )}
 
-      {/* Third Row - Whale & Sentiment Data */}
-      <WhaleAndSentimentSection
-        whaleDistributionData={whaleDistributionData}
-        exchangeReserveData={exchangeReserveData}
-        fundingRateData={fundingRateData}
-      />
+        {/* Third Row - Whale & Sentiment Data */}
+        {visibility.whaleAndSentiment && (
+          <WhaleAndSentimentSection
+            whaleDistributionData={whaleDistributionData}
+            exchangeReserveData={exchangeReserveData}
+            fundingRateData={fundingRateData}
+          />
+        )}
 
-      {/* Bottom Section - AI & News */}
-      <AIAndNewsSection />
+        {/* Bottom Section - AI & News */}
+        {visibility.aiAndNews && <AIAndNewsSection />}
+      </div>
     </DashboardLayout>
   );
 };
