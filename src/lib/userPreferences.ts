@@ -1,5 +1,12 @@
-import { supabase } from "./supabase";
-import { DashboardVisibility } from "@/pages/Preferences";
+import { supabase } from "./supabase-browser";
+// Define DashboardVisibility type locally instead of importing from @/pages/Preferences
+export interface DashboardVisibility {
+  liveMetrics: boolean;
+  networkStats: boolean;
+  lightningNetwork: boolean;
+  whaleAndSentiment: boolean;
+  aiAndNews: boolean;
+}
 
 // Type for theme preference
 export type Theme = "light" | "dark" | "system";
