@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useUser } from "@clerk/clerk-react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import LiveMetricsSection from "@/components/dashboard/sections/LiveMetricsSection";
@@ -6,9 +6,11 @@ import NetworkStatsSection from "@/components/dashboard/sections/NetworkStatsSec
 import LightningNetworkSection from "@/components/dashboard/sections/LightningNetworkSection";
 import WhaleAndSentimentSection from "@/components/dashboard/sections/WhaleAndSentimentSection";
 import AIAndNewsSection from "@/components/dashboard/sections/AIAndNewsSection";
+import { X } from "lucide-react";
 
 const Dashboard = () => {
   const { user } = useUser();
+  const [showWelcomeBanner, setShowWelcomeBanner] = useState(true);
 
   // Sample data for charts (same as Index page)
   const priceChartData = {
@@ -110,14 +112,23 @@ const Dashboard = () => {
 
   return (
     <DashboardLayout>
-      <div className="mb-6 p-4 bg-card rounded-lg border border-border">
-        <h2 className="text-2xl font-bold">
-          Welcome, {user?.firstName || "User"}
-        </h2>
-        <p className="text-muted-foreground">
-          This is your personal dashboard with detailed Bitcoin analytics
-        </p>
-      </div>
+      {showWelcomeBanner && (
+        <div className="mb-6 p-4 bg-card rounded-lg border border-border relative">
+          <button
+            onClick={() => setShowWelcomeBanner(false)}
+            className="absolute top-3 right-3 text-muted-foreground hover:text-foreground"
+            aria-label="Close welcome banner"
+          >
+            <X size={18} />
+          </button>
+          <h2 className="text-2xl font-bold">
+            Welcome, {user?.firstName || "User"}
+          </h2>
+          <p className="text-muted-foreground">
+            This is your personal dashboard with detailed Bitcoin analytics
+          </p>
+        </div>
+      )}
 
       {/* Top Row - Live Metrics */}
       <LiveMetricsSection />
