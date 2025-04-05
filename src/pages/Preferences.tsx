@@ -165,28 +165,6 @@ const Preferences = () => {
                     </SelectContent>
                   </Select>
                 </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="space-y-1">
-                    <Label htmlFor="price-update">
-                      Real-time price updates
-                    </Label>
-                    <p className="text-sm text-muted-foreground">
-                      Enable live price data updates
-                    </p>
-                  </div>
-                  <Switch id="price-update" defaultChecked />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="space-y-1">
-                    <Label htmlFor="animations">UI animations</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Enable smooth transitions and animations
-                    </p>
-                  </div>
-                  <Switch id="animations" defaultChecked />
-                </div>
               </CardContent>
             </Card>
           </TabsContent>
