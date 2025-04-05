@@ -50,10 +50,6 @@ const Header = () => {
           </SignedOut>
 
           <SignedIn>
-            <Button className="bg-gradient-to-r from-bitcoin to-amber-500 hover:from-bitcoin/90 hover:to-amber-500/90 text-white mr-2">
-              <Wallet className="h-4 w-4 mr-2" />
-              Connect Wallet
-            </Button>
             <UserButton />
           </SignedIn>
 
@@ -65,7 +61,6 @@ const Header = () => {
             aria-label="Open menu"
           >
             <Menu className="h-5 w-5" />
-            <span className="absolute top-0 right-0 w-2 h-2 bg-bitcoin rounded-full"></span>
           </Button>
         </div>
       </header>
