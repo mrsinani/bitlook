@@ -54,38 +54,34 @@ const CountdownTimer: React.FC<CountdownTimerProps> = ({
       </div>
 
       <div className="flex flex-col justify-between h-[300px]">
-        <div className="grid grid-cols-4 gap-4 text-center mt-10">
-          <div className="flex flex-col">
-            <div className="text-3xl font-bold animate-pulse-slow">
+        <div className="flex flex-col gap-4 justify-center items-center h-full">
+          <div className="flex flex-col items-center">
+            <div className="text-5xl font-bold animate-pulse-slow">
               {formatNumber(timeLeft.days)}
             </div>
             <div className="text-xs text-muted-foreground mt-1">Days</div>
           </div>
 
-          <div className="flex flex-col">
-            <div className="text-3xl font-bold animate-pulse-slow">
+          <div className="flex flex-col items-center">
+            <div className="text-5xl font-bold animate-pulse-slow">
               {formatNumber(timeLeft.hours)}
             </div>
             <div className="text-xs text-muted-foreground mt-1">Hours</div>
           </div>
 
-          <div className="flex flex-col">
-            <div className="text-3xl font-bold animate-pulse-slow">
+          <div className="flex flex-col items-center">
+            <div className="text-5xl font-bold animate-pulse-slow">
               {formatNumber(timeLeft.minutes)}
             </div>
             <div className="text-xs text-muted-foreground mt-1">Minutes</div>
           </div>
 
-          <div className="flex flex-col">
-            <div className="text-3xl font-bold animate-pulse-slow">
+          <div className="flex flex-col items-center">
+            <div className="text-5xl font-bold animate-pulse-slow">
               {formatNumber(timeLeft.seconds)}
             </div>
             <div className="text-xs text-muted-foreground mt-1">Seconds</div>
           </div>
-        </div>
-
-        <div className="mt-4 text-center text-xs text-muted-foreground">
-          Est. Date: {targetDate.toLocaleDateString()}
         </div>
       </div>
     </div>
