@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS public.user_preferences (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id TEXT NOT NULL UNIQUE, -- This will store the Clerk user ID
   dashboard_visibility JSONB NOT NULL DEFAULT '{"liveMetrics": true, "networkStats": true, "lightningNetwork": true, "whaleAndSentiment": true, "aiAndNews": true}',
+  show_welcome_banner BOOLEAN NOT NULL DEFAULT true,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
