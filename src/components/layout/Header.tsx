@@ -9,6 +9,7 @@ import {
   SignedOut,
 } from "@clerk/clerk-react";
 import Sidebar from "./Sidebar";
+import { Link } from "react-router-dom";
 
 const Header = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -20,12 +21,15 @@ const Header = () => {
   return (
     <>
       <header className="flex items-center justify-between py-4 px-6 bg-background/70 backdrop-blur-md sticky top-0 z-10 border-b border-border">
-        <div className="flex items-center gap-2">
+        <Link
+          to="/"
+          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+        >
           <Bitcoin className="h-6 w-6 text-bitcoin" />
           <span className="text-2xl font-bold tracking-tight">
             <span className="text-bitcoin">Bit</span>look
           </span>
-        </div>
+        </Link>
 
         <div className="flex items-center gap-3">
           <SignedOut>
