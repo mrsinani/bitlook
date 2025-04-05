@@ -9,6 +9,7 @@ import AIAndNewsSection from "@/components/dashboard/sections/AIAndNewsSection";
 import { X } from "lucide-react";
 import { DashboardVisibility } from "./Preferences";
 import { getUserPreferences, defaultPreferences } from "@/lib/userPreferences";
+import useBitcoinHistory from "@/hooks/useBitcoinHistory";
 
 const Dashboard = () => {
   const { user } = useUser();
@@ -17,6 +18,8 @@ const Dashboard = () => {
     defaultPreferences.dashboardVisibility
   );
   const [isLoading, setIsLoading] = useState(true);
+  const { chartData: bitcoinHistoryChartData, loading: bitcoinHistoryLoading } =
+    useBitcoinHistory();
 
   // Load visibility preferences from Supabase on mount
   useEffect(() => {
@@ -37,19 +40,7 @@ const Dashboard = () => {
     fetchUserPreferences();
   }, [user?.id]);
 
-  // Sample data for charts (same as Index page)
-  const priceChartData = {
-    labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
-    datasets: [
-      {
-        label: "Bitcoin Price (USD)",
-        data: [42000, 45000, 48000, 51000, 49000, 52000],
-        borderColor: "#F7931A",
-        backgroundColor: "rgba(247, 147, 26, 0.2)",
-      },
-    ],
-  };
-
+  // Sample data for other charts (besides Bitcoin price chart)
   const gasFeeChartData = {
     labels: ["00:00", "04:00", "08:00", "12:00", "16:00", "20:00"],
     datasets: [
@@ -171,13 +162,14 @@ const Dashboard = () => {
         {visibility.liveMetrics && <LiveMetricsSection />}
 
         {/* Second Row - Network Stats */}
-        {visibility.networkStats && (
-          <NetworkStatsSection />
-        )}
+        {visibility.networkStats && <NetworkStatsSection />}
 
         {/* Lightning Network Section */}
         {visibility.lightningNetwork && (
-          <LightningNetworkSection priceChartData={priceChartData} />
+          <LightningNetworkSection
+            priceChartData={bitcoinHistoryChartData}
+            isLoading={bitcoinHistoryLoading}
+          />
         )}
 
         {/* Third Row - Whale & Sentiment Data */}
