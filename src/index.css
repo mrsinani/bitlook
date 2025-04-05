@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -17,7 +16,7 @@
     --primary: 32 95% 54%; /* Bitcoin orange */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 174 59% 56%; /* Teal for positive values */
+    --secondary: 32 95% 54%; /* Bitcoin orange for positive values */
     --secondary-foreground: 215 23% 7%;
 
     --muted: 215 19% 15%;
@@ -49,15 +48,15 @@
   .glass-card {
     @apply bg-card/80 backdrop-blur-sm border border-white/10 rounded-2xl hover:shadow-lg hover:shadow-primary/10 transition-all duration-300;
   }
-  
+
   .bitcoin-gradient {
     @apply bg-gradient-to-r from-bitcoin to-amber-500;
   }
-  
+
   .positive-value {
     @apply text-positive font-medium;
   }
-  
+
   .negative-value {
     @apply text-negative font-medium;
   }
@@ -65,38 +64,38 @@
   .data-card {
     @apply glass-card p-6 relative overflow-hidden;
   }
-  
+
   .card-heading {
     @apply text-sm font-medium text-muted-foreground mb-1 flex items-center gap-2;
   }
-  
+
   .card-value {
     @apply text-2xl font-bold;
   }
-  
+
   .glow {
     @apply relative;
   }
-  
+
   .glow::after {
-    content: '';
+    content: "";
     @apply absolute -inset-1 rounded-3xl bg-bitcoin/20 blur-md opacity-0 transition-opacity duration-300;
     z-index: -1;
   }
-  
+
   .glow:hover::after {
     @apply opacity-100;
   }
 }
 
 @font-face {
-  font-family: 'Inter';
+  font-family: "Inter";
   font-style: normal;
   font-weight: 100 900;
   font-display: swap;
-  src: url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+  src: url("https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap");
 }
 
 html {
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
 }

@@ -1,7 +1,13 @@
-
-import React from 'react';
-import { Bitcoin, MessageSquare, Wallet } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import React from "react";
+import { Bitcoin, MessageSquare, Wallet } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  SignInButton,
+  SignUpButton,
+  UserButton,
+  SignedIn,
+  SignedOut,
+} from "@clerk/clerk-react";
 
 const Header = () => {
   return (
@@ -12,16 +18,34 @@ const Header = () => {
           <span className="text-bitcoin">Bit</span>look
         </span>
       </div>
-      
+
       <div className="flex items-center gap-3">
-        <Button variant="ghost" className="hidden md:flex items-center gap-2" size="sm">
-          Login
-        </Button>
-        <Button className="bg-gradient-to-r from-bitcoin to-amber-500 hover:from-bitcoin/90 hover:to-amber-500/90 text-white">
-          <Wallet className="h-4 w-4 mr-2" />
-          Connect Wallet
-        </Button>
-        <Button variant="outline" size="icon" className="relative">
+        <SignedOut>
+          <SignInButton>
+            <Button
+              variant="ghost"
+              className="hidden md:flex items-center gap-2"
+              size="sm"
+            >
+              Login
+            </Button>
+          </SignInButton>
+          <SignUpButton>
+            <Button className="bg-gradient-to-r from-bitcoin to-amber-500 hover:from-bitcoin/90 hover:to-amber-500/90 text-white">
+              Sign Up
+            </Button>
+          </SignUpButton>
+        </SignedOut>
+
+        <SignedIn>
+          <Button className="bg-gradient-to-r from-bitcoin to-amber-500 hover:from-bitcoin/90 hover:to-amber-500/90 text-white mr-2">
+            <Wallet className="h-4 w-4 mr-2" />
+            Connect Wallet
+          </Button>
+          <UserButton />
+        </SignedIn>
+
+        <Button variant="outline" size="icon" className="relative ml-2">
           <MessageSquare className="h-5 w-5" />
           <span className="absolute top-0 right-0 w-2 h-2 bg-bitcoin rounded-full"></span>
         </Button>

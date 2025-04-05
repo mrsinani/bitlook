@@ -1,8 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom";
-import { SignedIn, SignedOut, SignUpButton } from "@clerk/clerk-react";
-import { ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useUser } from "@clerk/clerk-react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import LiveMetricsSection from "@/components/dashboard/sections/LiveMetricsSection";
 import NetworkStatsSection from "@/components/dashboard/sections/NetworkStatsSection";
@@ -10,8 +7,10 @@ import LightningNetworkSection from "@/components/dashboard/sections/LightningNe
 import WhaleAndSentimentSection from "@/components/dashboard/sections/WhaleAndSentimentSection";
 import AIAndNewsSection from "@/components/dashboard/sections/AIAndNewsSection";
 
-const Index = () => {
-  // Sample data for charts
+const Dashboard = () => {
+  const { user } = useUser();
+
+  // Sample data for charts (same as Index page)
   const priceChartData = {
     labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
     datasets: [
@@ -112,30 +111,12 @@ const Index = () => {
   return (
     <DashboardLayout>
       <div className="mb-6 p-4 bg-card rounded-lg border border-border">
-        <SignedOut>
-          <h2 className="text-2xl font-bold">Welcome to Bitlook</h2>
-          <p className="text-muted-foreground mb-4">
-            Sign up for a personalized Bitcoin analytics experience
-          </p>
-          <SignUpButton>
-            <Button className="bg-gradient-to-r from-bitcoin to-amber-500 hover:from-bitcoin/90 hover:to-amber-500/90 text-white">
-              Get Started <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </SignUpButton>
-        </SignedOut>
-
-        <SignedIn>
-          <h2 className="text-2xl font-bold">Welcome Back!</h2>
-          <p className="text-muted-foreground mb-4">
-            Continue to your personalized dashboard for detailed Bitcoin
-            analytics
-          </p>
-          <Link to="/dashboard">
-            <Button className="bg-gradient-to-r from-bitcoin to-amber-500 hover:from-bitcoin/90 hover:to-amber-500/90 text-white">
-              Go to Dashboard <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </Link>
-        </SignedIn>
+        <h2 className="text-2xl font-bold">
+          Welcome, {user?.firstName || "User"}
+        </h2>
+        <p className="text-muted-foreground">
+          This is your personal dashboard with detailed Bitcoin analytics
+        </p>
       </div>
 
       {/* Top Row - Live Metrics */}
@@ -163,4 +144,4 @@ const Index = () => {
   );
 };
 
-export default Index;
+export default Dashboard;
