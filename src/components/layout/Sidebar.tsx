@@ -1,5 +1,5 @@
 import React from "react";
-import { Home, Settings, X, BarChart2 } from "lucide-react";
+import { Home, Settings, X, BarChart2, ThumbsUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
@@ -47,6 +47,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
               <Button variant="ghost" className="w-full justify-start">
                 <Settings className="mr-2 h-5 w-5" />
                 User Preferences
+              </Button>
+            </Link>
+
+            <Link to="/help-shape-bitlook" onClick={onClose}>
+              <Button variant="ghost" className="w-full justify-start">
+                <ThumbsUp className="mr-2 h-5 w-5" />
+                Help Shape Bitlook
               </Button>
             </Link>
           </div>

@@ -7,6 +7,7 @@ import { ClerkProvider } from "@clerk/clerk-react";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import Preferences from "./pages/Preferences";
+import HelpShapeBitlook from "./pages/HelpShapeBitlook";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 
@@ -39,6 +40,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Preferences />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/help-shape-bitlook"
+              element={
+                <ProtectedRoute>
+                  <HelpShapeBitlook />
                 </ProtectedRoute>
               }
             />
