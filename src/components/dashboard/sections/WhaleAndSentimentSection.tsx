@@ -1,7 +1,7 @@
 import React from "react";
 import PieChart from "@/components/dashboard/charts/PieChart";
 import LineChart from "@/components/dashboard/charts/LineChart";
-import GaugeChart from "@/components/dashboard/charts/GaugeChart";
+import FearGreedGauge from "@/components/dashboard/charts/FearGreedGauge";
 import BarChart from "@/components/dashboard/charts/BarChart";
 
 interface WhaleAndSentimentSectionProps {
@@ -34,11 +34,9 @@ const WhaleAndSentimentSection: React.FC<WhaleAndSentimentSectionProps> = ({
         />
       </div>
       <div className="xl:col-span-1">
-        <GaugeChart
+        <FearGreedGauge
           title="Fear & Greed Index"
           value={75}
-          min={0}
-          max={100}
           height="h-[300px]"
           className="h-full"
         />
