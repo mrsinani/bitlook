@@ -19,6 +19,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/components/ui/use-toast";
+import {
+  getUserPreferences,
+  saveUserPreferences,
+  defaultPreferences,
+} from "@/lib/userPreferences";
 
 // Define a type for dashboard visibility settings
 export type DashboardVisibility = {
@@ -44,31 +50,63 @@ export const DashboardVisibilityContext = React.createContext<{
   setVisibility: () => {},
 });
 
-// Default all sections to visible
-const defaultVisibility: DashboardVisibility = {
-  liveMetrics: true,
-  networkStats: true,
-  lightningNetwork: true,
-  whaleAndSentiment: true,
-  aiAndNews: true,
-};
-
 const Preferences = () => {
   const { user } = useUser();
-  const [visibility, setVisibility] = useState<DashboardVisibility>(() => {
-    // Try to load saved preferences from localStorage
-    const saved = localStorage.getItem("dashboardVisibility");
-    return saved ? JSON.parse(saved) : defaultVisibility;
-  });
+  const { toast } = useToast();
+  const [visibility, setVisibility] = useState<DashboardVisibility>(
+    defaultPreferences.dashboardVisibility
+  );
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Save visibility preferences to localStorage when they change
+  // Load user preferences from Supabase on component mount
   useEffect(() => {
-    localStorage.setItem("dashboardVisibility", JSON.stringify(visibility));
-  }, [visibility]);
+    async function loadUserPreferences() {
+      if (!user?.id) return;
 
-  const handleSavePreferences = () => {
-    localStorage.setItem("dashboardVisibility", JSON.stringify(visibility));
-    // Show a success message or notification here
+      try {
+        const preferences = await getUserPreferences(user.id);
+        setVisibility(preferences.dashboardVisibility);
+      } catch (error) {
+        console.error("Failed to load preferences:", error);
+      }
+    }
+
+    loadUserPreferences();
+  }, [user?.id]);
+
+  const handleSavePreferences = async () => {
+    if (!user?.id) return;
+
+    setIsLoading(true);
+    try {
+      const success = await saveUserPreferences(user.id, {
+        dashboardVisibility: visibility,
+      });
+
+      if (success) {
+        toast({
+          title: "Preferences saved",
+          description:
+            "Your dashboard preferences have been updated successfully.",
+        });
+      } else {
+        toast({
+          title: "Error saving preferences",
+          description:
+            "There was a problem saving your preferences. Please try again.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Failed to save preferences:", error);
+      toast({
+        title: "Error saving preferences",
+        description: "There was a problem saving your preferences.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -296,8 +334,9 @@ const Preferences = () => {
           <Button
             className="bg-gradient-to-r from-bitcoin to-amber-500 hover:from-bitcoin/90 hover:to-amber-500/90 text-white"
             onClick={handleSavePreferences}
+            disabled={isLoading}
           >
-            Save Preferences
+            {isLoading ? "Saving..." : "Save Preferences"}
           </Button>
         </div>
       </div>

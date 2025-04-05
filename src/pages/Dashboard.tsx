@@ -8,29 +8,34 @@ import WhaleAndSentimentSection from "@/components/dashboard/sections/WhaleAndSe
 import AIAndNewsSection from "@/components/dashboard/sections/AIAndNewsSection";
 import { X } from "lucide-react";
 import { DashboardVisibility } from "./Preferences";
+import { getUserPreferences, defaultPreferences } from "@/lib/userPreferences";
 
 const Dashboard = () => {
   const { user } = useUser();
   const [showWelcomeBanner, setShowWelcomeBanner] = useState(true);
-  const [visibility, setVisibility] = useState<DashboardVisibility>({
-    liveMetrics: true,
-    networkStats: true,
-    lightningNetwork: true,
-    whaleAndSentiment: true,
-    aiAndNews: true,
-  });
+  const [visibility, setVisibility] = useState<DashboardVisibility>(
+    defaultPreferences.dashboardVisibility
+  );
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Load visibility preferences from localStorage on mount
+  // Load visibility preferences from Supabase on mount
   useEffect(() => {
-    const savedVisibility = localStorage.getItem("dashboardVisibility");
-    if (savedVisibility) {
+    async function fetchUserPreferences() {
+      if (!user?.id) return;
+
       try {
-        setVisibility(JSON.parse(savedVisibility));
-      } catch (e) {
-        console.error("Failed to parse dashboard visibility settings", e);
+        setIsLoading(true);
+        const preferences = await getUserPreferences(user.id);
+        setVisibility(preferences.dashboardVisibility);
+      } catch (error) {
+        console.error("Failed to load dashboard preferences", error);
+      } finally {
+        setIsLoading(false);
       }
     }
-  }, []);
+
+    fetchUserPreferences();
+  }, [user?.id]);
 
   // Sample data for charts (same as Index page)
   const priceChartData = {
@@ -142,6 +147,21 @@ const Dashboard = () => {
 
     return "space-y-6"; // Maintain consistent spacing between sections
   };
+
+  if (isLoading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-96">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">
+              Loading your dashboard preferences...
+            </p>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>
