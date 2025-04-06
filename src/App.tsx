@@ -13,6 +13,7 @@ import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import WelcomeScreen from "./components/auth/WelcomeScreen";
 import LightningWallet from "./pages/LightningWallet";
+import VotingPage from "./pages/VotingPage";
 
 const queryClient = new QueryClient();
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
@@ -72,6 +73,8 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
+      {/* Public routes */}
+      <Route path="/voting" element={<VotingPage />} />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />
     </Routes>

@@ -64,6 +64,7 @@
     "date-fns": "^3.6.0",
     "dotenv": "^16.4.7",
     "embla-carousel-react": "^8.3.0",
+    "ethers": "^6.13.5",
     "express": "^5.1.0",
     "framer-motion": "^12.6.3",
     "input-otp": "^1.2.4",
@@ -89,6 +90,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
     "@tailwindcss/typography": "^0.5.15",
     "@types/cors": "^2.8.17",
     "@types/node": "^22.14.0",
@@ -103,6 +105,7 @@
     "eslint-plugin-react-hooks": "^5.1.0-rc.0",
     "eslint-plugin-react-refresh": "^0.4.9",
     "globals": "^15.9.0",
+    "hardhat": "^2.22.19",
     "lovable-tagger": "^1.1.7",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.11",
@@ -111,5 +114,18 @@
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.0.1",
     "vite": "^5.4.1"
-  }
+  },
+  "description": "**URL**: https://lovable.dev/projects/5085cc6f-b238-463e-a960-8a8f14c146e8",
+  "main": "eslint.config.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mrsinani/bitlook.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mrsinani/bitlook/issues"
+  },
+  "homepage": "https://github.com/mrsinani/bitlook#readme"
 }
