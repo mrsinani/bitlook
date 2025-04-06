@@ -29,7 +29,7 @@ function getEnvVar(key: string, defaultValue: string = ""): string {
 }
 
 // Common environment variables used in the application
-export const API_URL = getEnvVar("VITE_API_URL", "http://localhost:3001");
+export const API_URL = getEnvVar("VITE_API_URL", "http://localhost:3002");
 export const SUPABASE_URL = getEnvVar(
   "VITE_SUPABASE_URL",
   "https://your-supabase-url.supabase.co"

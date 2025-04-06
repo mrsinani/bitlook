@@ -28,7 +28,7 @@ async function replanStep(state) {
   }
 
   return {
-    plan: toolCall.args?.steps,
+    plan: toolCall.args?.steps || [],
     needsReplan: false,
     next: "supervisor",
   };
@@ -36,6 +36,18 @@ async function replanStep(state) {
 
 // Function to route after supervisor makes a decision
 function routeAfterSupervisor(state) {
+  // Add an explicit check to potentially exit the graph if something goes wrong
+  if (!state.next) {
+    console.warn("Supervisor did not set a valid next state, ending workflow");
+    return END;
+  }
+
+  // If we've done too many steps, force an exit to prevent infinite loops
+  if (state.pastSteps && state.pastSteps.length > 10) {
+    console.warn("Exceeded maximum steps (10), ending workflow");
+    return END;
+  }
+
   return state.next;
 }
 
@@ -65,5 +77,8 @@ const builder = new StateGraph(PlanExecuteState)
   // Start with planner
   .addEdge(START, "planner");
 
-// Compile the graph for execution
-export const workflow = builder.compile();
+// Compile the graph for execution with a higher recursion limit
+export const workflow = builder.compile({
+  recursionLimit: 50,
+  trackState: true,
+});

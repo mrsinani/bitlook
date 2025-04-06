@@ -5,6 +5,26 @@ import { TavilySearchResults } from "@langchain/community/tools/tavily_search";
 import { SupabaseVectorStore } from "@langchain/community/vectorstores/supabase";
 import { OpenAIEmbeddings } from "@langchain/openai";
 import { supabase } from "./supabase.js";
+import { DynamicTool } from "@langchain/core/tools";
+
+// Create a custom retriever tool since the built-in one might not be available
+function createRetrieverTool(retriever, options) {
+  const { name, description } = options;
+
+  return new DynamicTool({
+    name,
+    description,
+    func: async (query) => {
+      const docs = await retriever.getRelevantDocuments(query);
+      return JSON.stringify(
+        docs.map((doc) => ({
+          pageContent: doc.pageContent,
+          metadata: doc.metadata,
+        }))
+      );
+    },
+  });
+}
 
 /**
  * Researcher node function to gather information
@@ -16,11 +36,20 @@ export async function researcherNode(state) {
   const tavilyTool = new TavilySearchResults();
 
   // Initialize Supabase vector store
-  const vectorStoreRetriever = new SupabaseVectorStore(new OpenAIEmbeddings(), {
-    client: supabase,
-    tableName: "documents",
-    queryName: "match_documents",
-  }).asRetriever();
+  let vectorStoreRetriever;
+  try {
+    vectorStoreRetriever = new SupabaseVectorStore(new OpenAIEmbeddings(), {
+      client: supabase,
+      tableName: "documents",
+      queryName: "match_documents",
+    }).asRetriever();
+  } catch (error) {
+    console.warn("Failed to initialize vector store:", error.message);
+    // Create a simple fallback retriever that returns empty results
+    vectorStoreRetriever = {
+      getRelevantDocuments: async () => [],
+    };
+  }
 
   const vectorStoreTool = createRetrieverTool(vectorStoreRetriever, {
     name: "retrieve_blog_posts",
@@ -28,9 +57,14 @@ export async function researcherNode(state) {
       "Search and return information about Lilian Weng blog posts on LLM agents, prompt engineering, and adversarial attacks on LLMs.",
   });
 
-  const { data: publicSchemaData, error: publicSchemaError } =
-    await supabase.rpc("get_public_schema");
-    
+  let publicSchemaData = [];
+  try {
+    const { data, error } = await supabase.rpc("get_public_schema");
+    if (error) throw error;
+    publicSchemaData = data || [];
+  } catch (error) {
+    console.warn("Failed to fetch schema data:", error.message);
+  }
 
   const tools = [tavilyTool, vectorStoreTool];
 

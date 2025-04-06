@@ -47,9 +47,36 @@ check_port() {
 check_port 8080 || exit 1  # Main app (Vite uses 8080 by default)
 check_port 3001 || exit 1  # Lightning proxy
 check_port 3002 || exit 1  # API server
+check_port 8545 || exit 1  # Hardhat node
 
-# Step 1: Debug Lightning node connection
-echo -e "\n${YELLOW}Step 1: Checking connection to Voltage Lightning node...${NC}"
+# Step 1: Start Hardhat network and deploy contracts
+echo -e "\n${YELLOW}Step 1: Starting Ethereum local network...${NC}"
+cd "$BASE_DIR" && npx hardhat node > /dev/null &
+HARDHAT_PID=$!
+echo -e "${GREEN}Hardhat node starting with PID: $HARDHAT_PID${NC}"
+
+# Wait for Hardhat node to be ready
+echo -e "Waiting for Hardhat node to start..."
+sleep 5
+if ! curl -s -X POST -H "Content-Type: application/json" --data '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' http://localhost:8545 > /dev/null; then
+  echo -e "${RED}Hardhat node failed to start!${NC}"
+  kill $HARDHAT_PID 2>/dev/null
+  exit 1
+fi
+echo -e "${GREEN}Hardhat node is running!${NC}"
+
+# Deploy the contracts
+echo -e "\n${YELLOW}Deploying smart contracts...${NC}"
+cd "$BASE_DIR" && npx hardhat run scripts/deploy.cjs --network localhost
+if [ $? -ne 0 ]; then
+  echo -e "${RED}Failed to deploy smart contracts!${NC}"
+  kill $HARDHAT_PID 2>/dev/null
+  exit 1
+fi
+echo -e "${GREEN}Smart contracts deployed successfully!${NC}"
+
+# Step 2: Debug Lightning node connection
+echo -e "\n${YELLOW}Step 2: Checking connection to Voltage Lightning node...${NC}"
 cd "$BASE_DIR/server" && node debug.js
 DEBUG_STATUS=$?
 cd "$BASE_DIR"
@@ -57,38 +84,33 @@ cd "$BASE_DIR"
 if [ $DEBUG_STATUS -ne 0 ]; then
   echo -e "${RED}Failed to connect to Lightning node. Please check your .env configuration.${NC}"
   echo -e "See error details above for troubleshooting."
+  kill $HARDHAT_PID 2>/dev/null
   exit 1
 fi
 
-# Step 2: Start Lightning proxy with dependencies
-echo -e "\n${YELLOW}Step 2: Starting Lightning proxy server...${NC}"
-cd "$BASE_DIR/server" && npm start &
-LIGHTNING_PROXY_PID=$!
+# Step 3: Start Lightning proxy and API server together
+echo -e "\n${YELLOW}Step 3: Starting Lightning proxy and API server...${NC}"
+cd "$BASE_DIR/server" && npm run all &
+SERVER_PID=$!
 cd "$BASE_DIR"
-echo -e "${GREEN}Lightning proxy starting with PID: $LIGHTNING_PROXY_PID${NC}"
+echo -e "${GREEN}Lightning proxy and API server starting with PID: $SERVER_PID${NC}"
 
 # Wait for Lightning proxy to be ready
 echo -e "Waiting for Lightning proxy to start..."
 sleep 5
 if ! curl -s http://localhost:3001/ > /dev/null; then
   echo -e "${RED}Lightning proxy failed to start!${NC}"
-  kill $LIGHTNING_PROXY_PID 2>/dev/null
+  kill $HARDHAT_PID $SERVER_PID 2>/dev/null
   exit 1
 fi
 echo -e "${GREEN}Lightning proxy is running!${NC}"
-
-# Step 3: Start the API server
-echo -e "\n${YELLOW}Step 3: Starting API server...${NC}"
-cd "$BASE_DIR" && npm run server &
-API_PID=$!
-echo -e "${GREEN}API server starting with PID: $API_PID${NC}"
 
 # Wait for API server to be ready
 echo -e "Waiting for API server to start..."
 sleep 5
 if ! curl -s http://localhost:3002/api/health > /dev/null; then
   echo -e "${RED}API server failed to start!${NC}"
-  kill $LIGHTNING_PROXY_PID $API_PID 2>/dev/null
+  kill $HARDHAT_PID $SERVER_PID 2>/dev/null
   exit 1
 fi
 echo -e "${GREEN}API server is running!${NC}"
@@ -102,13 +124,14 @@ echo -e "${GREEN}Bitlook app starting with PID: $APP_PID${NC}"
 echo -e "\n${BLUE}========================================${NC}"
 echo -e "${GREEN}All services are now running!${NC}"
 echo -e "${BLUE}========================================${NC}"
+echo -e "Hardhat Node:    ${YELLOW}http://localhost:8545/${NC}"
 echo -e "Lightning Proxy: ${YELLOW}http://localhost:3001/${NC}"
 echo -e "API Server:      ${YELLOW}http://localhost:3002/${NC}"
 echo -e "Bitlook App:     ${YELLOW}http://localhost:8080/${NC}"
 echo -e "\nPress Ctrl+C to stop all services"
 
 # Trap SIGINT and SIGTERM to gracefully shut down services
-trap "echo -e '\n${YELLOW}Shutting down services...${NC}'; kill $LIGHTNING_PROXY_PID $API_PID $APP_PID 2>/dev/null; exit 0" SIGINT SIGTERM
+trap "echo -e '\n${YELLOW}Shutting down services...${NC}'; kill $HARDHAT_PID $SERVER_PID $APP_PID 2>/dev/null; exit 0" SIGINT SIGTERM
 
 # Keep the script running
 wait 

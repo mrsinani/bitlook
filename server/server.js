@@ -546,13 +546,13 @@ app.get("/api/funding-rate", async (req, res) => {
       okx: null,
       aggregated: {
         currentRate: 0,
-        totalExchanges: 0
-      }
+        totalExchanges: 0,
+      },
     };
-    
+
     // Track successful API calls
     let successfulCalls = 0;
-    
+
     // Fetch from multiple exchanges in parallel for better performance
     await Promise.allSettled([
       // 1. Kraken Futures API
@@ -562,27 +562,29 @@ app.get("/api/funding-rate", async (req, res) => {
             "https://futures.kraken.com/derivatives/api/v3/tickers",
             { timeout: 5000 }
           );
-          
+
           if (response.data && response.data.tickers) {
             // Find the BTC/USD perpetual contract
             const btcPerpetual = response.data.tickers.find(
               (ticker) => ticker.symbol === "PI_XBTUSD" // Kraken's symbol for BTC/USD perpetual
             );
-            
+
             if (btcPerpetual) {
               // Get the current funding rate
               const currentRate = parseFloat(btcPerpetual.fundingRate || 0);
-              const predictedRate = parseFloat(btcPerpetual.fundingRatePrediction || 0);
-              
+              const predictedRate = parseFloat(
+                btcPerpetual.fundingRatePrediction || 0
+              );
+
               exchangeData.kraken = {
                 currentRate,
                 predictedRate,
                 markPrice: parseFloat(btcPerpetual.markPrice || 0),
                 lastTradedPrice: parseFloat(btcPerpetual.last || 0),
                 symbol: "PI_XBTUSD",
-                interval: "8h"
+                interval: "8h",
               };
-              
+
               // Add to aggregated rate
               exchangeData.aggregated.currentRate += currentRate;
               exchangeData.aggregated.totalExchanges++;
@@ -593,7 +595,7 @@ app.get("/api/funding-rate", async (req, res) => {
           console.error("Error fetching Kraken funding rate:", error.message);
         }
       })(),
-      
+
       // 2. Binance API - very reliable
       (async () => {
         try {
@@ -601,26 +603,26 @@ app.get("/api/funding-rate", async (req, res) => {
             "https://fapi.binance.com/fapi/v1/premiumIndex",
             { timeout: 5000 }
           );
-          
+
           if (response.data && Array.isArray(response.data)) {
             // Find the BTC/USDT perpetual contract
             const btcPerpetual = response.data.find(
               (ticker) => ticker.symbol === "BTCUSDT"
             );
-            
+
             if (btcPerpetual) {
               // Get the current funding rate
               const currentRate = parseFloat(btcPerpetual.lastFundingRate || 0);
-              
+
               exchangeData.binance = {
                 currentRate,
                 predictedRate: parseFloat(btcPerpetual.nextFundingRate || 0),
                 markPrice: parseFloat(btcPerpetual.markPrice || 0),
                 lastTradedPrice: 0,
                 symbol: "BTCUSDT",
-                interval: "8h"
+                interval: "8h",
               };
-              
+
               // Add to aggregated rate
               exchangeData.aggregated.currentRate += currentRate;
               exchangeData.aggregated.totalExchanges++;
@@ -631,7 +633,7 @@ app.get("/api/funding-rate", async (req, res) => {
           console.error("Error fetching Binance funding rate:", error.message);
         }
       })(),
-      
+
       // 3. Bybit API
       (async () => {
         try {
@@ -639,35 +641,40 @@ app.get("/api/funding-rate", async (req, res) => {
             "https://api.bybit.com/v5/market/tickers?category=linear&symbol=BTCUSDT",
             { timeout: 5000 }
           );
-          
-          if (response.data && response.data.result && response.data.result.list) {
+
+          if (
+            response.data &&
+            response.data.result &&
+            response.data.result.list
+          ) {
             // Get the BTC/USDT contract data
             const btcContract = response.data.result.list[0];
-            
+
             if (btcContract) {
               // Get funding data in a separate call
               const fundingResponse = await axios.get(
                 "https://api.bybit.com/v5/market/funding/history?category=linear&symbol=BTCUSDT&limit=1",
                 { timeout: 5000 }
               );
-              
-              if (fundingResponse.data && 
-                  fundingResponse.data.result && 
-                  fundingResponse.data.result.list &&
-                  fundingResponse.data.result.list.length > 0) {
-                
+
+              if (
+                fundingResponse.data &&
+                fundingResponse.data.result &&
+                fundingResponse.data.result.list &&
+                fundingResponse.data.result.list.length > 0
+              ) {
                 const fundingData = fundingResponse.data.result.list[0];
                 const currentRate = parseFloat(fundingData.fundingRate || 0);
-                
+
                 exchangeData.bybit = {
                   currentRate,
                   predictedRate: 0, // Bybit doesn't provide predicted rate in this API
                   markPrice: parseFloat(btcContract.markPrice || 0),
                   lastTradedPrice: parseFloat(btcContract.lastPrice || 0),
                   symbol: "BTCUSDT",
-                  interval: "8h"
+                  interval: "8h",
                 };
-                
+
                 // Add to aggregated rate
                 exchangeData.aggregated.currentRate += currentRate;
                 exchangeData.aggregated.totalExchanges++;
@@ -679,7 +686,7 @@ app.get("/api/funding-rate", async (req, res) => {
           console.error("Error fetching Bybit funding rate:", error.message);
         }
       })(),
-      
+
       // 4. OKX API
       (async () => {
         try {
@@ -687,36 +694,39 @@ app.get("/api/funding-rate", async (req, res) => {
             "https://www.okx.com/api/v5/public/funding-rate?instId=BTC-USDT-SWAP",
             { timeout: 5000 }
           );
-          
-          if (response.data && 
-              response.data.data && 
-              response.data.data.length > 0) {
-            
+
+          if (
+            response.data &&
+            response.data.data &&
+            response.data.data.length > 0
+          ) {
             const fundingData = response.data.data[0];
             const currentRate = parseFloat(fundingData.fundingRate || 0);
-            
+
             // Get mark price in a separate call
             const tickerResponse = await axios.get(
               "https://www.okx.com/api/v5/market/ticker?instId=BTC-USDT-SWAP",
               { timeout: 5000 }
             );
-            
+
             let markPrice = 0;
-            if (tickerResponse.data && 
-                tickerResponse.data.data && 
-                tickerResponse.data.data.length > 0) {
+            if (
+              tickerResponse.data &&
+              tickerResponse.data.data &&
+              tickerResponse.data.data.length > 0
+            ) {
               markPrice = parseFloat(tickerResponse.data.data[0].markPx || 0);
             }
-            
+
             exchangeData.okx = {
               currentRate,
               predictedRate: parseFloat(fundingData.nextFundingRate || 0),
               markPrice,
               lastTradedPrice: 0,
               symbol: "BTC-USDT-SWAP",
-              interval: "8h"
+              interval: "8h",
             };
-            
+
             // Add to aggregated rate
             exchangeData.aggregated.currentRate += currentRate;
             exchangeData.aggregated.totalExchanges++;
@@ -725,19 +735,20 @@ app.get("/api/funding-rate", async (req, res) => {
         } catch (error) {
           console.error("Error fetching OKX funding rate:", error.message);
         }
-      })()
+      })(),
     ]);
-    
+
     // Calculate aggregated funding rate if we have data from any exchange
     if (exchangeData.aggregated.totalExchanges > 0) {
-      exchangeData.aggregated.currentRate /= exchangeData.aggregated.totalExchanges;
+      exchangeData.aggregated.currentRate /=
+        exchangeData.aggregated.totalExchanges;
     }
-    
+
     // If we have no data from any exchange, throw an error
     if (successfulCalls === 0) {
       throw new Error("Failed to fetch funding rate data from any exchange");
     }
-    
+
     // Determine sentiment based on the aggregated funding rate
     let sentiment;
     const rate = exchangeData.aggregated.currentRate;
@@ -746,25 +757,29 @@ app.get("/api/funding-rate", async (req, res) => {
     else if (rate > -0.0001) sentiment = "Neutral";
     else if (rate > -0.0005) sentiment = "Bearish";
     else sentiment = "Strongly Bearish";
-    
+
     // Format the response
     res.status(200).json({
       // Aggregated data
       currentRate: exchangeData.aggregated.currentRate,
       predictedRate: exchangeData.kraken?.predictedRate || 0, // Use Kraken's predicted rate for now
       sentiment,
-      
+
       // Details for each exchange
       exchanges: {
         kraken: exchangeData.kraken,
         binance: exchangeData.binance,
         bybit: exchangeData.bybit,
-        okx: exchangeData.okx
+        okx: exchangeData.okx,
       },
-      
+
       // Display information
-      markPrice: exchangeData.binance?.markPrice || exchangeData.kraken?.markPrice || 0,
-      lastTradedPrice: exchangeData.bybit?.lastTradedPrice || exchangeData.kraken?.lastTradedPrice || 0,
+      markPrice:
+        exchangeData.binance?.markPrice || exchangeData.kraken?.markPrice || 0,
+      lastTradedPrice:
+        exchangeData.bybit?.lastTradedPrice ||
+        exchangeData.kraken?.lastTradedPrice ||
+        0,
       source: "Multi-Exchange",
       symbol: "BTC/USD Perpetual",
       explanation:
@@ -955,6 +970,40 @@ app.post("/api/ai/workflow", async (req, res) => {
     res.status(200).json(result);
   } catch (error) {
     console.error("Error running AI workflow:", error);
+    res.status(500).json({
+      error: "Failed to process request",
+      input: req.body.input || "",
+      plan: [],
+      pastSteps: [
+        [
+          "Error",
+          `The AI agent encountered an error: ${
+            error.message || "Unknown error"
+          }`,
+        ],
+      ],
+      response:
+        "I'm unable to process your request at the moment. The AI services might be unavailable or misconfigured. Please contact the administrator for assistance.",
+      needsReplan: false,
+    });
+  }
+});
+
+// Legacy endpoint for compatibility - Redirect to workflow endpoint
+app.post("/api/agent/execute", async (req, res) => {
+  try {
+    const { input } = req.body;
+
+    if (!input) {
+      return res.status(400).json({ error: "Input is required" });
+    }
+
+    // Use the LangGraph workflow implementation
+    const result = await runWorkflow(input);
+
+    res.status(200).json(result);
+  } catch (error) {
+    console.error("Error running AI workflow from legacy endpoint:", error);
     res.status(500).json({
       error: "Failed to process request",
       input: req.body.input || "",
