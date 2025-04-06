@@ -2,7 +2,7 @@ import axios from "axios";
 import { getCachedData, setCachedData, isCacheValid } from "../utils/apiCache";
 
 // Define base URL for API calls
-const API_BASE_URL = "http://localhost:3001";
+const API_BASE_URL = "http://localhost:3002";
 
 // Define cache keys
 const CACHE_KEYS = {
@@ -218,7 +218,7 @@ const FALLBACK_DATA = {
       kraken: null,
       binance: null,
       bybit: null,
-      okx: null
+      okx: null,
     },
     lastUpdated: new Date(),
     fromCache: false,

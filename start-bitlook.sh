@@ -44,8 +44,9 @@ check_port() {
 }
 
 # Check required ports
-check_port 3000 || exit 1  # Main app
+check_port 8080 || exit 1  # Main app (Vite uses 8080 by default)
 check_port 3001 || exit 1  # Lightning proxy
+check_port 3002 || exit 1  # API server
 
 # Step 1: Debug Lightning node connection
 echo -e "\n${YELLOW}Step 1: Checking connection to Voltage Lightning node...${NC}"
@@ -76,8 +77,24 @@ if ! curl -s http://localhost:3001/ > /dev/null; then
 fi
 echo -e "${GREEN}Lightning proxy is running!${NC}"
 
-# Step 3: Start the main application
-echo -e "\n${YELLOW}Step 3: Starting Bitlook application...${NC}"
+# Step 3: Start the API server
+echo -e "\n${YELLOW}Step 3: Starting API server...${NC}"
+cd "$BASE_DIR" && npm run server &
+API_PID=$!
+echo -e "${GREEN}API server starting with PID: $API_PID${NC}"
+
+# Wait for API server to be ready
+echo -e "Waiting for API server to start..."
+sleep 5
+if ! curl -s http://localhost:3002/api/health > /dev/null; then
+  echo -e "${RED}API server failed to start!${NC}"
+  kill $LIGHTNING_PROXY_PID $API_PID 2>/dev/null
+  exit 1
+fi
+echo -e "${GREEN}API server is running!${NC}"
+
+# Step 4: Start the main application
+echo -e "\n${YELLOW}Step 4: Starting Bitlook application...${NC}"
 cd "$BASE_DIR" && npm run dev &
 APP_PID=$!
 echo -e "${GREEN}Bitlook app starting with PID: $APP_PID${NC}"
@@ -86,11 +103,12 @@ echo -e "\n${BLUE}========================================${NC}"
 echo -e "${GREEN}All services are now running!${NC}"
 echo -e "${BLUE}========================================${NC}"
 echo -e "Lightning Proxy: ${YELLOW}http://localhost:3001/${NC}"
-echo -e "Bitlook App:     ${YELLOW}http://localhost:3000/${NC}"
+echo -e "API Server:      ${YELLOW}http://localhost:3002/${NC}"
+echo -e "Bitlook App:     ${YELLOW}http://localhost:8080/${NC}"
 echo -e "\nPress Ctrl+C to stop all services"
 
 # Trap SIGINT and SIGTERM to gracefully shut down services
-trap "echo -e '\n${YELLOW}Shutting down services...${NC}'; kill $LIGHTNING_PROXY_PID $APP_PID 2>/dev/null; exit 0" SIGINT SIGTERM
+trap "echo -e '\n${YELLOW}Shutting down services...${NC}'; kill $LIGHTNING_PROXY_PID $API_PID $APP_PID 2>/dev/null; exit 0" SIGINT SIGTERM
 
 # Keep the script running
 wait 
