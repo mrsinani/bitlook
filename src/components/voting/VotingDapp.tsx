@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { ethers } from "ethers";
 import {
   Card,
@@ -17,6 +17,13 @@ import CandidateList from "./CandidateList";
 import VotingStatus from "./VotingStatus";
 import AdminPanel from "./AdminPanel";
 import votingAbi from "../../lib/contracts/VotingAbi";
+
+// Add ethereum type to the Window interface
+declare global {
+  interface Window {
+    ethereum?: any;
+  }
+}
 
 // Contract addresses for different environments
 const CONTRACT_ADDRESSES = {
@@ -58,73 +65,49 @@ const VotingDapp = () => {
 
   // Connect to Ethereum and set up contract
   const connectWallet = async () => {
+    setNetworkError(null);
     try {
-      setNetworkError(null);
-      if (!CONTRACT_ADDRESS) {
-        setNetworkError("Contract address not configured for this environment");
-        setIsLoading(false);
-        return;
-      }
-
+      // Check if MetaMask is installed
       if (window.ethereum) {
         const provider = new ethers.BrowserProvider(window.ethereum);
         const accounts = await provider.send("eth_requestAccounts", []);
-        const signer = await provider.getSigner();
 
-        // Get the network to make sure we're on the right chain
-        const network = await provider.getNetwork();
-
-        // Check if we have a deployed contract on this network
-        try {
-          const votingContract = new ethers.Contract(
-            CONTRACT_ADDRESS,
-            votingAbi,
-            signer
-          );
-
-          setContract(votingContract);
+        if (accounts.length > 0) {
           setAccount(accounts[0]);
+          setIsLoading(true);
+          const signer = await provider.getSigner();
+          setContract(new ethers.Contract(CONTRACT_ADDRESS, votingAbi, signer));
 
           // Check if current user is the contract owner
-          const owner = await votingContract.owner();
+          const owner = await contract.owner();
           setIsOwner(owner.toLowerCase() === accounts[0].toLowerCase());
 
           // Load initial data
-          await loadContractData(votingContract, accounts[0]);
+          await loadContractData(contract, accounts[0]);
 
           // Listen for account changes
           window.ethereum.on("accountsChanged", (newAccounts: string[]) => {
             setAccount(newAccounts[0]);
-            checkOwner(votingContract, newAccounts[0]);
-            checkVotingStatus(votingContract);
-            checkHasVoted(votingContract, newAccounts[0]);
+            checkOwner(contract, newAccounts[0]);
+            checkVotingStatus(contract);
+            checkHasVoted(contract, newAccounts[0]);
           });
-        } catch (error) {
-          console.error("Contract error:", error);
-          setNetworkError(
-            "Could not connect to the voting contract. Make sure you're on the correct network."
-          );
         }
-
-        setIsLoading(false);
       } else {
-        toast({
-          variant: "destructive",
-          title: "Ethereum provider not found",
-          description:
-            "Please install MetaMask or another Ethereum wallet to use this dApp.",
-        });
-        setIsLoading(false);
+        setNetworkError("Please install MetaMask to use this dApp");
       }
     } catch (error) {
-      console.error("Error connecting to wallet:", error);
-      toast({
-        variant: "destructive",
-        title: "Connection Error",
-        description: "Failed to connect to your wallet.",
-      });
+      setNetworkError("Failed to connect wallet");
+      console.error(error);
+    } finally {
       setIsLoading(false);
     }
+  };
+
+  const disconnectWallet = () => {
+    setAccount("");
+    setIsOwner(false);
+    setContract(null);
   };
 
   const loadContractData = async (

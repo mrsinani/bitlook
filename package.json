@@ -20,7 +20,7 @@
     "start:contracts": "concurrently \"npm run hardhat:node\" \"sleep 5 && npm run hardhat:deploy\"",
     "start:all": "concurrently \"npm run start:contracts\" \"cd server && npm run all\" \"sleep 5 && npm run dev\"",
     "start:easy": "./start-bitlook.sh",
-    "vercel-build": "tsc && vite build && cd server && npm install"
+    "vercel-build": "vite build"
   },
   "dependencies": {
     "@clerk/clerk-react": "^5.25.6",

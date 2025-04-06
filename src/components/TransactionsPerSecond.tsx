@@ -273,7 +273,9 @@ const TransactionsPerSecond = ({
             {estimatedBlocks && (
               <div className="text-xs text-center text-muted-foreground">
                 Est. blocks needed:{" "}
-                <span className="font-medium">{estimatedBlocks}</span>
+                <span className="font-medium">
+                  {estimatedBlocks.toString()}
+                </span>
               </div>
             )}
           </div>

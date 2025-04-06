@@ -1515,3 +1515,51 @@ export const fetchBitcoinHistory = async (
     throw error;
   }
 };
+
+// Fix error handling in the fetchVoltageWalletBalance function
+export const fetchVoltageWalletBalance =
+  async (): Promise<LightningWalletBalance | null> => {
+    try {
+      const response = await axios.get<LightningWalletBalance>(
+        `${API_BASE_URL}/api/lightning/balance`
+      );
+
+      return response.data;
+    } catch (error: any) {
+      console.error("Error fetching Lightning wallet balance:", error);
+      if (error.response) {
+        console.error("Response data:", error.response.data);
+      } else if (error.message) {
+        console.error("Error message:", error.message);
+      }
+      return null;
+    }
+  };
+
+// Fix error handling in other similar functions
+export const fetchLightningInfo =
+  async (): Promise<LightningNodeInfo | null> => {
+    try {
+      const response = await axios.get<LightningNodeInfo>(
+        `${API_BASE_URL}/api/lightning/info`
+      );
+      return response.data;
+    } catch (error: any) {
+      console.error("Error fetching Lightning node info:", error);
+      if (error.response) {
+        console.error("Response data:", error.response.data);
+      } else if (error.message) {
+        console.error("Error message:", error.message);
+      }
+      return null;
+    }
+  };
+
+// Fix item parameter in array.map
+const processData = (data: any[]): ProcessedDataItem[] => {
+  return data.map((item: any) => ({
+    id: item.id,
+    value: item.value,
+    timestamp: new Date(item.timestamp),
+  }));
+};

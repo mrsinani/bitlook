@@ -1,11 +1,17 @@
-import React from 'react';
-import MetricCard from '@/components/dashboard/MetricCard';
-import { Bitcoin, CircleDollarSign, Database, ArrowUpRight } from 'lucide-react';
-import BitcoinPrice from '@/components/BitcoinPrice';
-import MarketCap from '@/components/MarketCap';
-import CirculatingSupply from '@/components/CirculatingSupply';
-import BlockchainHeight from '@/components/BlockchainHeight';
-import ErrorBoundary from '@/components/ErrorBoundary';
+import React from "react";
+import MetricCard from "@/components/dashboard/MetricCard";
+import {
+  Bitcoin,
+  CircleDollarSign,
+  Database,
+  ArrowUpRight,
+} from "lucide-react";
+import BitcoinPrice from "@/components/BitcoinPrice";
+import MarketCap from "@/components/MarketCap";
+import CirculatingSupply from "@/components/CirculatingSupply";
+import BlockchainHeight from "@/components/BlockchainHeight";
+import ErrorBoundary from "@/components/ErrorBoundary";
+import AutoRefreshStatus from "@/components/AutoRefreshStatus";
 
 const LiveMetricsSection = () => {
   // Fallback UI for metric cards when they error
@@ -22,23 +28,26 @@ const LiveMetricsSection = () => {
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
       <div className="col-span-1">
         <ErrorBoundary fallback={metricErrorFallback("Bitcoin Price")}>
-          <BitcoinPrice refreshInterval={30000} />
+          <BitcoinPrice />
         </ErrorBoundary>
       </div>
       <div className="col-span-1">
         <ErrorBoundary fallback={metricErrorFallback("Market Cap")}>
-          <MarketCap refreshInterval={30000} />
+          <MarketCap />
         </ErrorBoundary>
       </div>
       <div className="col-span-1">
         <ErrorBoundary fallback={metricErrorFallback("Circulating Supply")}>
-          <CirculatingSupply refreshInterval={30000} />
+          <CirculatingSupply />
         </ErrorBoundary>
       </div>
       <div className="col-span-1">
         <ErrorBoundary fallback={metricErrorFallback("Blockchain Height")}>
-          <BlockchainHeight refreshInterval={30000} />
+          <BlockchainHeight />
         </ErrorBoundary>
+      </div>
+      <div className="col-span-1">
+        <AutoRefreshStatus />
       </div>
     </div>
   );

@@ -125,11 +125,7 @@ const Index = () => {
       <LiveMetricsSection />
 
       {/* Second Row - Network Stats */}
-      <NetworkStatsSection
-        gasFeeChartData={gasFeeChartData}
-        tpsChartData={tpsChartData}
-        nextHalvingDate={nextHalvingDate}
-      />
+      <NetworkStatsSection />
 
       <LightningNetworkSection priceChartData={priceChartData} />
 

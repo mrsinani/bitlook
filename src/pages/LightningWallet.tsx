@@ -52,6 +52,8 @@ const LightningWallet = () => {
   const [receiveDescription, setReceiveDescription] = useState("");
   const [invoice, setInvoice] = useState("");
   const [activeTab, setActiveTab] = useState("send");
+  const [prevBalance, setPrevBalance] = useState<number | null>(null);
+  const [isBalanceChanging, setIsBalanceChanging] = useState(false);
 
   // Load wallet data on mount
   useEffect(() => {
@@ -84,6 +86,21 @@ const LightningWallet = () => {
 
     loadWalletData();
   }, []);
+
+  useEffect(() => {
+    if (balance) {
+      const currentBalance = balance;
+      if (prevBalance !== null && currentBalance !== prevBalance) {
+        // Animate the balance change
+        setIsBalanceChanging(true);
+        const timer = setTimeout(() => {
+          setIsBalanceChanging(false);
+        }, 2000);
+        return () => clearTimeout(timer);
+      }
+      setPrevBalance(currentBalance);
+    }
+  }, [balance, prevBalance]);
 
   const handleRefresh = async () => {
     setIsLoading(true);

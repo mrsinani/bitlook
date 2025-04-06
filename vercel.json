@@ -6,15 +6,19 @@
       "use": "@vercel/node"
     },
     {
-      "src": "server/**/*.js",
+      "src": "api/*.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
-    { "src": "/api/(.*)", "dest": "server/server.js" },
-    { "src": "/proxy/(.*)", "dest": "server/proxy.js" },
+    { "src": "/api/lightning/(.*)", "dest": "/api/lightning.js" },
+    { "src": "/api/contracts/(.*)", "dest": "/api/contracts.js" },
+    { "src": "/api/(.*)", "dest": "/api/index.js" },
+    { "src": "/proxy/(.*)", "dest": "/api/lightning.js" },
     { "src": "/(.*)", "dest": "/index.html" }
   ],
+  "buildCommand": "npm run vercel-build",
+  "outputDirectory": "dist",
   "env": {
     "NODE_ENV": "production"
   }

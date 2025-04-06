@@ -226,8 +226,7 @@ const GasFees = ({ refreshInterval = 60000 }: GasFeesProps) => {
                     value={
                       (data.fastestFee / Math.max(data.fastestFee, 100)) * 100
                     }
-                    className="h-1.5 bg-gray-200"
-                    indicatorClassName="bg-red-500"
+                    className="h-2 w-full bg-gray-200 dark:bg-gray-800"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -239,8 +238,7 @@ const GasFees = ({ refreshInterval = 60000 }: GasFeesProps) => {
                     value={
                       (data.halfHourFee / Math.max(data.fastestFee, 100)) * 100
                     }
-                    className="h-1.5 bg-gray-200"
-                    indicatorClassName="bg-orange-500"
+                    className="h-2 w-full bg-gray-200 dark:bg-gray-800"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -252,8 +250,7 @@ const GasFees = ({ refreshInterval = 60000 }: GasFeesProps) => {
                     value={
                       (data.hourFee / Math.max(data.fastestFee, 100)) * 100
                     }
-                    className="h-1.5 bg-gray-200"
-                    indicatorClassName="bg-yellow-500"
+                    className="h-2 w-full bg-gray-200 dark:bg-gray-800"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -265,8 +262,7 @@ const GasFees = ({ refreshInterval = 60000 }: GasFeesProps) => {
                     value={
                       (data.economyFee / Math.max(data.fastestFee, 100)) * 100
                     }
-                    className="h-1.5 bg-gray-200"
-                    indicatorClassName="bg-green-500"
+                    className="h-2 w-full bg-gray-200 dark:bg-gray-800"
                   />
                 </div>
               </div>

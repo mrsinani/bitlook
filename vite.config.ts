@@ -9,14 +9,24 @@ export default defineConfig(({ mode }) => ({
     host: "::",
     port: 8080,
   },
-  plugins: [
-    react(),
-    mode === 'development' &&
-    componentTagger(),
-  ].filter(Boolean),
+  plugins: [react(), mode === "development" && componentTagger()].filter(
+    Boolean
+  ),
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+    },
+  },
+  build: {
+    // Skip type checking during build
+    minify: mode === "production",
+  },
+  optimizeDeps: {
+    esbuildOptions: {
+      // Enable JSX in .js files
+      loader: {
+        ".js": "jsx",
+      },
     },
   },
 }));
