@@ -1,6 +1,16 @@
 import { useState, useEffect } from 'react';
 import { fetchFundingRate } from '../services/api';
 
+// Interface for individual exchange data
+export interface ExchangeFundingData {
+  currentRate: number;
+  predictedRate: number;
+  markPrice: number;
+  lastTradedPrice: number;
+  symbol: string;
+  interval: string;
+}
+
 // Interface for the hook's return value
 export interface FundingRateHook {
   data: FundingRateData | null;
@@ -23,10 +33,18 @@ export interface FundingRateData {
   lastUpdated: Date;
   fromCache: boolean;
   isFallback?: boolean;
+  // New fields for multi-exchange support
+  exchangeCount: number;
+  exchanges?: {
+    kraken: ExchangeFundingData | null;
+    binance: ExchangeFundingData | null;
+    bybit: ExchangeFundingData | null;
+    okx: ExchangeFundingData | null;
+  };
 }
 
 /**
- * Hook for fetching Bitcoin funding rate data
+ * Hook for fetching Bitcoin funding rate data from multiple exchanges
  * @param refreshInterval - Interval in milliseconds to refresh the data (default: 5 minutes)
  * @returns An object containing the data, loading state, error, and refetch function
  */

@@ -509,51 +509,238 @@ app.get("/api/fear-greed-index", async (req, res) => {
 // Bitcoin Funding Rate endpoint
 app.get("/api/funding-rate", async (req, res) => {
   try {
-    // Use Kraken Futures API for funding rates - US accessible
-    const response = await axios.get(
-      "https://futures.kraken.com/derivatives/api/v3/tickers"
-    );
-
-    if (!response.data || !response.data.tickers) {
-      throw new Error("Unexpected response format from Kraken API");
+    // Create an object to store all exchange data
+    const exchangeData = {
+      kraken: null,
+      binance: null,
+      bybit: null,
+      okx: null,
+      aggregated: {
+        currentRate: 0,
+        totalExchanges: 0
+      }
+    };
+    
+    // Track successful API calls
+    let successfulCalls = 0;
+    
+    // Fetch from multiple exchanges in parallel for better performance
+    await Promise.allSettled([
+      // 1. Kraken Futures API
+      (async () => {
+        try {
+          const response = await axios.get(
+            "https://futures.kraken.com/derivatives/api/v3/tickers",
+            { timeout: 5000 }
+          );
+          
+          if (response.data && response.data.tickers) {
+            // Find the BTC/USD perpetual contract
+            const btcPerpetual = response.data.tickers.find(
+              (ticker) => ticker.symbol === "PI_XBTUSD" // Kraken's symbol for BTC/USD perpetual
+            );
+            
+            if (btcPerpetual) {
+              // Get the current funding rate
+              const currentRate = parseFloat(btcPerpetual.fundingRate || 0);
+              const predictedRate = parseFloat(btcPerpetual.fundingRatePrediction || 0);
+              
+              exchangeData.kraken = {
+                currentRate,
+                predictedRate,
+                markPrice: parseFloat(btcPerpetual.markPrice || 0),
+                lastTradedPrice: parseFloat(btcPerpetual.last || 0),
+                symbol: "PI_XBTUSD",
+                interval: "8h"
+              };
+              
+              // Add to aggregated rate
+              exchangeData.aggregated.currentRate += currentRate;
+              exchangeData.aggregated.totalExchanges++;
+              successfulCalls++;
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching Kraken funding rate:", error.message);
+        }
+      })(),
+      
+      // 2. Binance API - very reliable
+      (async () => {
+        try {
+          const response = await axios.get(
+            "https://fapi.binance.com/fapi/v1/premiumIndex",
+            { timeout: 5000 }
+          );
+          
+          if (response.data && Array.isArray(response.data)) {
+            // Find the BTC/USDT perpetual contract
+            const btcPerpetual = response.data.find(
+              (ticker) => ticker.symbol === "BTCUSDT"
+            );
+            
+            if (btcPerpetual) {
+              // Get the current funding rate
+              const currentRate = parseFloat(btcPerpetual.lastFundingRate || 0);
+              
+              exchangeData.binance = {
+                currentRate,
+                predictedRate: parseFloat(btcPerpetual.nextFundingRate || 0),
+                markPrice: parseFloat(btcPerpetual.markPrice || 0),
+                lastTradedPrice: 0,
+                symbol: "BTCUSDT",
+                interval: "8h"
+              };
+              
+              // Add to aggregated rate
+              exchangeData.aggregated.currentRate += currentRate;
+              exchangeData.aggregated.totalExchanges++;
+              successfulCalls++;
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching Binance funding rate:", error.message);
+        }
+      })(),
+      
+      // 3. Bybit API
+      (async () => {
+        try {
+          const response = await axios.get(
+            "https://api.bybit.com/v5/market/tickers?category=linear&symbol=BTCUSDT",
+            { timeout: 5000 }
+          );
+          
+          if (response.data && response.data.result && response.data.result.list) {
+            // Get the BTC/USDT contract data
+            const btcContract = response.data.result.list[0];
+            
+            if (btcContract) {
+              // Get funding data in a separate call
+              const fundingResponse = await axios.get(
+                "https://api.bybit.com/v5/market/funding/history?category=linear&symbol=BTCUSDT&limit=1",
+                { timeout: 5000 }
+              );
+              
+              if (fundingResponse.data && 
+                  fundingResponse.data.result && 
+                  fundingResponse.data.result.list &&
+                  fundingResponse.data.result.list.length > 0) {
+                
+                const fundingData = fundingResponse.data.result.list[0];
+                const currentRate = parseFloat(fundingData.fundingRate || 0);
+                
+                exchangeData.bybit = {
+                  currentRate,
+                  predictedRate: 0, // Bybit doesn't provide predicted rate in this API
+                  markPrice: parseFloat(btcContract.markPrice || 0),
+                  lastTradedPrice: parseFloat(btcContract.lastPrice || 0),
+                  symbol: "BTCUSDT",
+                  interval: "8h"
+                };
+                
+                // Add to aggregated rate
+                exchangeData.aggregated.currentRate += currentRate;
+                exchangeData.aggregated.totalExchanges++;
+                successfulCalls++;
+              }
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching Bybit funding rate:", error.message);
+        }
+      })(),
+      
+      // 4. OKX API
+      (async () => {
+        try {
+          const response = await axios.get(
+            "https://www.okx.com/api/v5/public/funding-rate?instId=BTC-USDT-SWAP",
+            { timeout: 5000 }
+          );
+          
+          if (response.data && 
+              response.data.data && 
+              response.data.data.length > 0) {
+            
+            const fundingData = response.data.data[0];
+            const currentRate = parseFloat(fundingData.fundingRate || 0);
+            
+            // Get mark price in a separate call
+            const tickerResponse = await axios.get(
+              "https://www.okx.com/api/v5/market/ticker?instId=BTC-USDT-SWAP",
+              { timeout: 5000 }
+            );
+            
+            let markPrice = 0;
+            if (tickerResponse.data && 
+                tickerResponse.data.data && 
+                tickerResponse.data.data.length > 0) {
+              markPrice = parseFloat(tickerResponse.data.data[0].markPx || 0);
+            }
+            
+            exchangeData.okx = {
+              currentRate,
+              predictedRate: parseFloat(fundingData.nextFundingRate || 0),
+              markPrice,
+              lastTradedPrice: 0,
+              symbol: "BTC-USDT-SWAP",
+              interval: "8h"
+            };
+            
+            // Add to aggregated rate
+            exchangeData.aggregated.currentRate += currentRate;
+            exchangeData.aggregated.totalExchanges++;
+            successfulCalls++;
+          }
+        } catch (error) {
+          console.error("Error fetching OKX funding rate:", error.message);
+        }
+      })()
+    ]);
+    
+    // Calculate aggregated funding rate if we have data from any exchange
+    if (exchangeData.aggregated.totalExchanges > 0) {
+      exchangeData.aggregated.currentRate /= exchangeData.aggregated.totalExchanges;
     }
-
-    // Find the BTC/USD perpetual contract
-    const btcPerpetual = response.data.tickers.find(
-      (ticker) => ticker.symbol === "PI_XBTUSD" // Kraken's symbol for BTC/USD perpetual
-    );
-
-    if (!btcPerpetual) {
-      throw new Error(
-        "Could not find BTC/USD perpetual data in Kraken response"
-      );
+    
+    // If we have no data from any exchange, throw an error
+    if (successfulCalls === 0) {
+      throw new Error("Failed to fetch funding rate data from any exchange");
     }
-
-    // Get the current funding rate
-    const currentRate = parseFloat(btcPerpetual.fundingRate || 0);
-
-    // Also get the predicted next funding rate if available
-    const predictedRate = parseFloat(btcPerpetual.fundingRatePrediction || 0);
-
-    // Determine sentiment based on the current funding rate
+    
+    // Determine sentiment based on the aggregated funding rate
     let sentiment;
-    if (currentRate > 0.0001) sentiment = "Strongly Bullish";
-    else if (currentRate > 0) sentiment = "Bullish";
-    else if (currentRate > -0.0001) sentiment = "Neutral";
-    else if (currentRate > -0.0005) sentiment = "Bearish";
+    const rate = exchangeData.aggregated.currentRate;
+    if (rate > 0.0001) sentiment = "Strongly Bullish";
+    else if (rate > 0) sentiment = "Bullish";
+    else if (rate > -0.0001) sentiment = "Neutral";
+    else if (rate > -0.0005) sentiment = "Bearish";
     else sentiment = "Strongly Bearish";
-
+    
     // Format the response
     res.status(200).json({
-      currentRate: currentRate,
-      predictedRate: predictedRate,
-      sentiment: sentiment,
-      markPrice: parseFloat(btcPerpetual.markPrice || 0),
-      lastTradedPrice: parseFloat(btcPerpetual.last || 0),
-      source: "Kraken Futures",
-      symbol: "PI_XBTUSD (BTC/USD Perpetual)",
+      // Aggregated data
+      currentRate: exchangeData.aggregated.currentRate,
+      predictedRate: exchangeData.kraken?.predictedRate || 0, // Use Kraken's predicted rate for now
+      sentiment,
+      
+      // Details for each exchange
+      exchanges: {
+        kraken: exchangeData.kraken,
+        binance: exchangeData.binance,
+        bybit: exchangeData.bybit,
+        okx: exchangeData.okx
+      },
+      
+      // Display information
+      markPrice: exchangeData.binance?.markPrice || exchangeData.kraken?.markPrice || 0,
+      lastTradedPrice: exchangeData.bybit?.lastTradedPrice || exchangeData.kraken?.lastTradedPrice || 0,
+      source: "Multi-Exchange",
+      symbol: "BTC/USD Perpetual",
       explanation:
         "Positive rates typically mean the market is bullish (longs pay shorts), negative rates typically mean the market is bearish (shorts pay longs).",
+      exchangeCount: exchangeData.aggregated.totalExchanges,
       time: Math.floor(Date.now() / 1000),
     });
   } catch (error) {

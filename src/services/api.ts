@@ -213,6 +213,13 @@ const FALLBACK_DATA = {
     symbol: "BTC/USD",
     explanation:
       "Positive rates typically mean the market is bullish (longs pay shorts), negative rates typically mean the market is bearish (shorts pay longs).",
+    exchangeCount: 0,
+    exchanges: {
+      kraken: null,
+      binance: null,
+      bybit: null,
+      okx: null
+    },
     lastUpdated: new Date(),
     fromCache: false,
     isFallback: true,
@@ -1010,6 +1017,41 @@ interface FundingRateResponse {
   source: string;
   symbol: string;
   explanation: string;
+  exchangeCount: number;
+  exchanges: {
+    kraken: {
+      currentRate: number;
+      predictedRate: number;
+      markPrice: number;
+      lastTradedPrice: number;
+      symbol: string;
+      interval: string;
+    } | null;
+    binance: {
+      currentRate: number;
+      predictedRate: number;
+      markPrice: number;
+      lastTradedPrice: number;
+      symbol: string;
+      interval: string;
+    } | null;
+    bybit: {
+      currentRate: number;
+      predictedRate: number;
+      markPrice: number;
+      lastTradedPrice: number;
+      symbol: string;
+      interval: string;
+    } | null;
+    okx: {
+      currentRate: number;
+      predictedRate: number;
+      markPrice: number;
+      lastTradedPrice: number;
+      symbol: string;
+      interval: string;
+    } | null;
+  };
   time: number;
 }
 
@@ -1028,6 +1070,41 @@ export const fetchFundingRate = async (
   lastUpdated: Date;
   fromCache: boolean;
   isFallback?: boolean;
+  exchangeCount: number;
+  exchanges?: {
+    kraken: {
+      currentRate: number;
+      predictedRate: number;
+      markPrice: number;
+      lastTradedPrice: number;
+      symbol: string;
+      interval: string;
+    } | null;
+    binance: {
+      currentRate: number;
+      predictedRate: number;
+      markPrice: number;
+      lastTradedPrice: number;
+      symbol: string;
+      interval: string;
+    } | null;
+    bybit: {
+      currentRate: number;
+      predictedRate: number;
+      markPrice: number;
+      lastTradedPrice: number;
+      symbol: string;
+      interval: string;
+    } | null;
+    okx: {
+      currentRate: number;
+      predictedRate: number;
+      markPrice: number;
+      lastTradedPrice: number;
+      symbol: string;
+      interval: string;
+    } | null;
+  };
 }> => {
   try {
     // Check cache first (3 minute TTL for funding rates - they can change quickly)
@@ -1061,6 +1138,8 @@ export const fetchFundingRate = async (
       source: response.data.source,
       symbol: response.data.symbol,
       explanation: response.data.explanation,
+      exchanges: response.data.exchanges,
+      exchangeCount: response.data.exchangeCount,
       lastUpdated: new Date(response.data.time * 1000),
       fromCache: false,
     };
