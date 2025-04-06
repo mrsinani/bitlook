@@ -5,9 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+<<<<<<< Updated upstream
     "server": "cross-env NODE_ENV=development node server/server.js",
     "server:prod": "cross-env NODE_ENV=production node server/server.js",
     "dev:full": "concurrently \"npm run dev\" \"npm run server\"",
+=======
+    "server": "node server/server.js",
+>>>>>>> Stashed changes
     "build": "tsc && vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
@@ -97,8 +101,11 @@
     "@vitejs/plugin-react-swc": "^3.5.0",
     "autoprefixer": "^10.4.20",
     "concurrently": "^9.1.2",
+<<<<<<< Updated upstream
     "cross-env": "^7.0.3",
     "dotenv": "^16.4.7",
+=======
+>>>>>>> Stashed changes
     "eslint": "^9.9.0",
     "eslint-plugin-react-hooks": "^5.1.0-rc.0",
     "eslint-plugin-react-refresh": "^0.4.9",

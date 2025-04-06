@@ -11,7 +11,10 @@ import Preferences from "./pages/Preferences";
 import HelpShapeBitlook from "./pages/HelpShapeBitlook";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
+<<<<<<< Updated upstream
 import WelcomeScreen from "./components/auth/WelcomeScreen";
+=======
+>>>>>>> Stashed changes
 import LightningWallet from "./pages/LightningWallet";
 
 const queryClient = new QueryClient();
@@ -87,7 +90,47 @@ const App = () => (
             <Toaster />
             <Sonner />
             <BrowserRouter>
+<<<<<<< Updated upstream
               <AppRoutes />
+=======
+              <Routes>
+                <Route path="/" element={<Dashboard />} />
+                <Route
+                  path="/dashboard"
+                  element={
+                    <ProtectedRoute>
+                      <Dashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/lightning-wallet"
+                  element={
+                    <ProtectedRoute>
+                      <LightningWallet />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/preferences"
+                  element={
+                    <ProtectedRoute>
+                      <Preferences />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/help-shape-bitlook"
+                  element={
+                    <ProtectedRoute>
+                      <HelpShapeBitlook />
+                    </ProtectedRoute>
+                  }
+                />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+>>>>>>> Stashed changes
             </BrowserRouter>
           </TooltipProvider>
         </ThemeProvider>
