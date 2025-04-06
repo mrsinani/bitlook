@@ -12,7 +12,10 @@ import HelpShapeBitlook from "./pages/HelpShapeBitlook";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 import WelcomeScreen from "./components/auth/WelcomeScreen";
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 import LightningWallet from "./pages/LightningWallet";
