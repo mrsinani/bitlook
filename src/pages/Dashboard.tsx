@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { useUser } from "@clerk/clerk-react";
+import { useUser, useAuth } from "@clerk/clerk-react";
+import { Navigate } from "react-router-dom";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import LiveMetricsSection from "@/components/dashboard/sections/LiveMetricsSection";
 import NetworkStatsSection from "@/components/dashboard/sections/NetworkStatsSection";
@@ -9,14 +10,24 @@ import AIAndNewsSection from "@/components/dashboard/sections/AIAndNewsSection";
 import { X } from "lucide-react";
 import { DashboardVisibility } from "./Preferences";
 import { getUserPreferences, defaultPreferences } from "@/lib/userPreferences";
+import useBitcoinHistory from "@/hooks/useBitcoinHistory";
+import { AutoRefreshProvider } from "@/context/AutoRefreshContext";
 
 const Dashboard = () => {
   const { user } = useUser();
+  const { userId } = useAuth();
   const [showWelcomeBanner, setShowWelcomeBanner] = useState(true);
   const [visibility, setVisibility] = useState<DashboardVisibility>(
     defaultPreferences.dashboardVisibility
   );
   const [isLoading, setIsLoading] = useState(true);
+  const { chartData: bitcoinHistoryChartData, loading: bitcoinHistoryLoading } =
+    useBitcoinHistory();
+
+  // Redirect to home if not authenticated (additional safety)
+  if (!userId) {
+    return <Navigate to="/" replace />;
+  }
 
   // Load visibility preferences from Supabase on mount
   useEffect(() => {
@@ -37,19 +48,7 @@ const Dashboard = () => {
     fetchUserPreferences();
   }, [user?.id]);
 
-  // Sample data for charts (same as Index page)
-  const priceChartData = {
-    labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
-    datasets: [
-      {
-        label: "Bitcoin Price (USD)",
-        data: [42000, 45000, 48000, 51000, 49000, 52000],
-        borderColor: "#F7931A",
-        backgroundColor: "rgba(247, 147, 26, 0.2)",
-      },
-    ],
-  };
-
+  // Sample data for other charts (besides Bitcoin price chart)
   const gasFeeChartData = {
     labels: ["00:00", "04:00", "08:00", "12:00", "16:00", "20:00"],
     datasets: [
@@ -148,49 +147,52 @@ const Dashboard = () => {
 
   return (
     <DashboardLayout>
-      {showWelcomeBanner && (
-        <div className="mb-6 p-4 bg-card rounded-lg border border-border relative">
-          <button
-            onClick={() => setShowWelcomeBanner(false)}
-            className="absolute top-3 right-3 text-muted-foreground hover:text-foreground"
-            aria-label="Close welcome banner"
-          >
-            <X size={18} />
-          </button>
-          <h2 className="text-2xl font-bold">
-            Welcome, {user?.firstName || "User"}
-          </h2>
-          <p className="text-muted-foreground">
-            This is your personal dashboard with detailed Bitcoin analytics
-          </p>
+      <AutoRefreshProvider defaultRefreshInterval={5000}>
+        {showWelcomeBanner && (
+          <div className="mb-6 p-4 bg-card rounded-lg border border-border relative">
+            <button
+              onClick={() => setShowWelcomeBanner(false)}
+              className="absolute top-3 right-3 text-muted-foreground hover:text-foreground"
+              aria-label="Close welcome banner"
+            >
+              <X size={18} />
+            </button>
+            <h2 className="text-2xl font-bold">
+              Welcome, {user?.firstName || "User"}
+            </h2>
+            <p className="text-muted-foreground">
+              This is your personal dashboard with detailed Bitcoin analytics
+            </p>
+          </div>
+        )}
+
+        <div className={getGridClasses()}>
+          {/* Top Row - Live Metrics */}
+          {visibility.liveMetrics && <LiveMetricsSection />}
+
+          {/* Second Row - Network Stats */}
+          {visibility.networkStats && <NetworkStatsSection />}
+
+          {/* Lightning Network Section */}
+          {visibility.lightningNetwork && (
+            <LightningNetworkSection
+              priceChartData={bitcoinHistoryChartData}
+              isLoading={bitcoinHistoryLoading}
+            />
+          )}
+
+          {/* Third Row - Whale & Sentiment Data */}
+          {visibility.whaleAndSentiment && (
+            <WhaleAndSentimentSection
+              whaleDistributionData={whaleDistributionData}
+              exchangeReserveData={exchangeReserveData}
+            />
+          )}
+
+          {/* Bottom Section - AI & News */}
+          {visibility.aiAndNews && <AIAndNewsSection />}
         </div>
-      )}
-
-      <div className={getGridClasses()}>
-        {/* Top Row - Live Metrics */}
-        {visibility.liveMetrics && <LiveMetricsSection />}
-
-        {/* Second Row - Network Stats */}
-        {visibility.networkStats && (
-          <NetworkStatsSection />
-        )}
-
-        {/* Lightning Network Section */}
-        {visibility.lightningNetwork && (
-          <LightningNetworkSection priceChartData={priceChartData} />
-        )}
-
-        {/* Third Row - Whale & Sentiment Data */}
-        {visibility.whaleAndSentiment && (
-          <WhaleAndSentimentSection
-            whaleDistributionData={whaleDistributionData}
-            exchangeReserveData={exchangeReserveData}
-          />
-        )}
-
-        {/* Bottom Section - AI & News */}
-        {visibility.aiAndNews && <AIAndNewsSection />}
-      </div>
+      </AutoRefreshProvider>
     </DashboardLayout>
   );
 };

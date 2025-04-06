@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { Badge } from "./ui/badge";
 import BarChart from "@/components/dashboard/charts/BarChart";
+import useAutoRefreshable from "@/hooks/useAutoRefreshable";
 
 interface TransactionsPerSecondProps {
   refreshInterval?: number;
@@ -32,6 +33,21 @@ const TransactionsPerSecond = ({
   const { data: mempoolData } = useMempoolStats(refreshInterval);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
+
+  // Register for auto-refresh when cached
+  useAutoRefreshable(
+    async () => {
+      // Don't set refreshing state here to avoid UI flicker during auto refresh
+      try {
+        await refetch(true);
+        setRetryCount((prev) => prev + 1);
+      } catch (error) {
+        console.error("Error auto-refreshing TPS data:", error);
+      }
+    },
+    isFromCache,
+    "transactions-per-second" // Unique ID for this component
+  );
 
   useEffect(() => {
     // Debug logging to help trace issues
@@ -205,6 +221,7 @@ const TransactionsPerSecond = ({
             <Badge
               variant="outline"
               className="ml-2 text-amber-500 border-amber-500"
+              title="Auto-refreshing every 5 seconds"
             >
               <DatabaseIcon className="h-3 w-3 mr-1" />
               Cached

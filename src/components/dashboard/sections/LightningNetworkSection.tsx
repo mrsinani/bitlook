@@ -1,14 +1,17 @@
-import React from 'react';
-import LineChart from '@/components/dashboard/charts/LineChart';
-import LightningStats from '@/components/LightningStats';
-import ErrorBoundary from '@/components/ErrorBoundary';
+import React from "react";
+import LineChart from "@/components/dashboard/charts/LineChart";
+import LightningStats from "@/components/LightningStats";
+import ErrorBoundary from "@/components/ErrorBoundary";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface LightningNetworkSectionProps {
   priceChartData: any;
+  isLoading?: boolean;
 }
 
 const LightningNetworkSection: React.FC<LightningNetworkSectionProps> = ({
-  priceChartData
+  priceChartData,
+  isLoading = false,
 }) => {
   // Fallback UI for metric cards when they error
   const metricErrorFallback = (title: string) => (
@@ -27,11 +30,22 @@ const LightningNetworkSection: React.FC<LightningNetworkSectionProps> = ({
           <LightningStats refreshInterval={300000} />
         </ErrorBoundary>
       </div>
-      <LineChart
-        title="Bitcoin Price (6 Months)"
-        data={priceChartData}
-        className="xl:col-span-3"
-      />
+      {isLoading ? (
+        <div className="xl:col-span-3 p-4 bg-white rounded-lg border shadow-sm flex flex-col">
+          <h3 className="font-medium text-lg mb-2">Bitcoin Price (12 Hours)</h3>
+          <div className="flex-grow flex items-center justify-center">
+            <div className="w-full h-[300px] flex items-center justify-center">
+              <Skeleton className="w-full h-full" />
+            </div>
+          </div>
+        </div>
+      ) : (
+        <LineChart
+          title="Bitcoin Price (12 Hours)"
+          data={priceChartData}
+          className="xl:col-span-3"
+        />
+      )}
     </div>
   );
 };

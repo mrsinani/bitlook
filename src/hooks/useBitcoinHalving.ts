@@ -69,13 +69,23 @@ export const useBitcoinHalving = (refreshInterval = 300000): BitcoinHalvingHook 
       const halvingData = await fetchBitcoinHalving(forceRefresh);
       console.log('Received Bitcoin halving data:', halvingData);
       
-      setData(halvingData);
-      setIsFromCache(halvingData.fromCache);
-      
-      // Calculate time remaining based on estimated halving date
-      if (halvingData.estimatedHalvingDate) {
-        setTimeRemaining(calculateTimeRemaining(halvingData.estimatedHalvingDate));
+      // If we already have an estimated date and this is a refresh,
+      // preserve the existing countdown calculations to avoid jumps
+      if (data?.estimatedHalvingDate && forceRefresh) {
+        console.log('Preserving existing halving date during manual refresh');
+        setData({
+          ...halvingData,
+          estimatedHalvingDate: data.estimatedHalvingDate
+        });
+      } else {
+        setData(halvingData);
+        // Calculate time remaining based on estimated halving date
+        if (halvingData.estimatedHalvingDate) {
+          setTimeRemaining(calculateTimeRemaining(halvingData.estimatedHalvingDate));
+        }
       }
+      
+      setIsFromCache(halvingData.fromCache);
       
       // Clear any previous errors if we got data successfully
       setError(null);
