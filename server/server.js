@@ -34,7 +34,7 @@ if (isDev) {
 }
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3002;
 
 // Middleware
 app.use(cors());
@@ -483,12 +483,14 @@ app.get("/api/bitcoin-halving", async (req, res) => {
     // Instead of using the current time as the base for the calculation,
     // we'll use a more stable approach based on average block time
     // from the Bitcoin genesis block (Jan 3, 2009)
-    const genesisDate = new Date('2009-01-03T18:15:05Z');
+    const genesisDate = new Date("2009-01-03T18:15:05Z");
     const blocksSinceGenesis = currentHeight;
     const minutesSinceGenesis = blocksSinceGenesis * minutesPerBlock;
-    
+
     const halvingDate = new Date(genesisDate);
-    halvingDate.setMinutes(halvingDate.getMinutes() + minutesSinceGenesis + minutesRemaining);
+    halvingDate.setMinutes(
+      halvingDate.getMinutes() + minutesSinceGenesis + minutesRemaining
+    );
 
     // Current halving epoch (0-indexed)
     const currentEpoch = Math.floor(currentHeight / halvingInterval);

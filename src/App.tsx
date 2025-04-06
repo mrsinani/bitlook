@@ -12,6 +12,7 @@ import HelpShapeBitlook from "./pages/HelpShapeBitlook";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import WelcomeScreen from "./components/auth/WelcomeScreen";
+import LightningWallet from "./pages/LightningWallet";
 
 const queryClient = new QueryClient();
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
@@ -44,6 +45,14 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <Dashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/lightning-wallet"
+        element={
+          <ProtectedRoute>
+            <LightningWallet />
           </ProtectedRoute>
         }
       />

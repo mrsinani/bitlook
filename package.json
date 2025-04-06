@@ -10,8 +10,13 @@
     "dev:full": "concurrently \"npm run dev\" \"npm run server\"",
     "build": "tsc && vite build",
     "build:dev": "vite build --mode development",
-    "lint": "eslint .",
-    "preview": "vite preview"
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "preview": "vite preview",
+    "lightning-proxy": "cd server && npm start",
+    "debug:lightning": "cd server && npm run debug",
+    "setup:lightning": "cd server && node setup-env.js",
+    "start:all": "concurrently \"npm run lightning-proxy\" \"sleep 3 && npm run server\" \"sleep 5 && npm run dev\"",
+    "start:easy": "./start-bitlook.sh"
   },
   "dependencies": {
     "@clerk/clerk-react": "^5.25.6",
@@ -65,6 +70,7 @@
     "langchain": "^0.3.20",
     "lucide-react": "^0.462.0",
     "next-themes": "^0.3.0",
+    "qrcode.react": "^3.2.0",
     "react": "^18.3.1",
     "react-chartjs-2": "^5.3.0",
     "react-day-picker": "^8.10.1",

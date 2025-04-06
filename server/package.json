@@ -1,0 +1,21 @@
+{
+  "name": "bitlook-lightning-proxy",
+  "version": "1.0.0",
+  "description": "Proxy server for Lightning Network API calls",
+  "main": "proxy.js",
+  "scripts": {
+    "prestart": "npm install",
+    "start": "node proxy.js",
+    "dev": "nodemon proxy.js",
+    "debug": "node debug.js"
+  },
+  "dependencies": {
+    "axios": "^1.6.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}
