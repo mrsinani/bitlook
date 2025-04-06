@@ -1,25 +1,10 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "api/*.js",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    { "src": "/api/lightning/(.*)", "dest": "/api/lightning.js" },
-    { "src": "/api/contracts/(.*)", "dest": "/api/contracts.js" },
-    { "src": "/api/(.*)", "dest": "/api/server.js" },
-    { "src": "/proxy/(.*)", "dest": "/api/lightning.js" },
-    { "src": "/(.*)", "dest": "/index.html" }
-  ],
-  "buildCommand": "npm run vercel-build",
-  "outputDirectory": "dist",
-  "env": {
-    "NODE_ENV": "production"
-  }
+  "rewrites": [
+    { "source": "/api/lightning/:path*", "destination": "/api/lightning" },
+    { "source": "/api/contracts/:path*", "destination": "/api/contracts" },
+    { "source": "/api/auth/:path*", "destination": "/api/auth" },
+    { "source": "/api/:path*", "destination": "/api/server" },
+    { "source": "/proxy/:path*", "destination": "/api/lightning" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
 }
