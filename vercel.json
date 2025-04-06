@@ -13,7 +13,7 @@
   "routes": [
     { "src": "/api/lightning/(.*)", "dest": "/api/lightning.js" },
     { "src": "/api/contracts/(.*)", "dest": "/api/contracts.js" },
-    { "src": "/api/(.*)", "dest": "/api/index.js" },
+    { "src": "/api/(.*)", "dest": "/api/server.js" },
     { "src": "/proxy/(.*)", "dest": "/api/lightning.js" },
     { "src": "/(.*)", "dest": "/index.html" }
   ],

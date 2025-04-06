@@ -11,7 +11,6 @@ import MarketCap from "@/components/MarketCap";
 import CirculatingSupply from "@/components/CirculatingSupply";
 import BlockchainHeight from "@/components/BlockchainHeight";
 import ErrorBoundary from "@/components/ErrorBoundary";
-import AutoRefreshStatus from "@/components/AutoRefreshStatus";
 
 const LiveMetricsSection = () => {
   // Fallback UI for metric cards when they error
@@ -45,9 +44,6 @@ const LiveMetricsSection = () => {
         <ErrorBoundary fallback={metricErrorFallback("Blockchain Height")}>
           <BlockchainHeight />
         </ErrorBoundary>
-      </div>
-      <div className="col-span-1">
-        <AutoRefreshStatus />
       </div>
     </div>
   );
