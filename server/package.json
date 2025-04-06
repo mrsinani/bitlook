@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Proxy server for Lightning Network API calls",
   "main": "proxy.js",
+  "type": "module",
   "scripts": {
     "prestart": "npm install",
     "start": "node proxy.js",
@@ -10,6 +11,7 @@
     "debug": "node debug.js"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.49.4",
     "axios": "^1.6.2",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",

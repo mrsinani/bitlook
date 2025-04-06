@@ -1,11 +1,39 @@
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { ChatOpenAI } from "@langchain/openai";
 import { StringOutputParser } from "@langchain/core/output_parsers";
+import { TavilySearchResults } from "@langchain/community/tools/tavily_search";
+import { SupabaseVectorStore } from "@langchain/community/vectorstores/supabase";
+import { OpenAIEmbeddings } from "@langchain/openai";
+import { supabase } from "./supabase.js";
 
 /**
  * Researcher node function to gather information
  */
 export async function researcherNode(state) {
+  /**
+   * Tools
+   */
+  const tavilyTool = new TavilySearchResults();
+
+  // Initialize Supabase vector store
+  const vectorStoreRetriever = new SupabaseVectorStore(new OpenAIEmbeddings(), {
+    client: supabase,
+    tableName: "documents",
+    queryName: "match_documents",
+  }).asRetriever();
+
+  const vectorStoreTool = createRetrieverTool(vectorStoreRetriever, {
+    name: "retrieve_blog_posts",
+    description:
+      "Search and return information about Lilian Weng blog posts on LLM agents, prompt engineering, and adversarial attacks on LLMs.",
+  });
+
+  const { data: publicSchemaData, error: publicSchemaError } =
+    await supabase.rpc("get_public_schema");
+    
+
+  const tools = [tavilyTool, vectorStoreTool];
+
   // Get the input, plan, and progress
   const input = state.input;
   const plan = state.plan;
@@ -36,13 +64,14 @@ CONTEXT AND PREVIOUS STEPS:
 {previousSteps}
 
 Please research and provide detailed information about the current plan step. 
-Be thorough and provide accurate information with citations when possible. 
-Focus specifically on the current plan step, not future steps.
+
 
 Your response should be comprehensive but focused only on this research task.`);
 
     // Create the model and parser
-    const model = new ChatOpenAI({ model: "gpt-4o", temperature: 0 });
+    const model = new ChatOpenAI({ model: "gpt-4o", temperature: 0 }).bindTools(
+      tools
+    );
     const parser = new StringOutputParser();
 
     // Create the researcher chain
