@@ -2,9 +2,36 @@ import express from "express";
 import cors from "cors";
 import axios from "axios";
 import dotenv from "dotenv";
+import { runWorkflow, getExecutionTrace } from "./langgraph/index.js";
 
 // Load environment variables
-dotenv.config();
+dotenv.config({ path: new URL("./.env", import.meta.url).pathname });
+
+// For development: Mock API integrations if API keys are not available
+const isDev = process.env.NODE_ENV !== "production";
+
+if (isDev) {
+  // Provide mock values for required API keys in development
+  if (
+    !process.env.OPENAI_API_KEY ||
+    process.env.OPENAI_API_KEY === "your_openai_api_key"
+  ) {
+    process.env.OPENAI_API_KEY = "sk-mock-key-for-development";
+    console.warn(
+      "⚠️ Using mock OpenAI API key. Some AI features will not work."
+    );
+  }
+
+  if (
+    !process.env.TAVILY_API_KEY ||
+    process.env.TAVILY_API_KEY === "your_tavily_api_key"
+  ) {
+    process.env.TAVILY_API_KEY = "tavily-mock-key-for-development";
+    console.warn(
+      "⚠️ Using mock Tavily API key. Search features will not work."
+    );
+  }
+}
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -907,6 +934,62 @@ app.get("/api/bitcoin-news", async (req, res) => {
     res.status(500).json({
       error: "Failed to fetch Bitcoin news",
       message: error.message,
+    });
+  }
+});
+
+// AI Agent workflow endpoint - Using LangGraph implementation
+app.post("/api/ai/workflow", async (req, res) => {
+  try {
+    const { input } = req.body;
+
+    if (!input) {
+      return res.status(400).json({ error: "Input is required" });
+    }
+
+    // Use the LangGraph workflow implementation
+    const result = await runWorkflow(input);
+
+    res.status(200).json(result);
+  } catch (error) {
+    console.error("Error running AI workflow:", error);
+    res.status(500).json({
+      error: "Failed to process request",
+      input: req.body.input || "",
+      plan: [],
+      pastSteps: [
+        [
+          "Error",
+          `The AI agent encountered an error: ${
+            error.message || "Unknown error"
+          }`,
+        ],
+      ],
+      response:
+        "I'm unable to process your request at the moment. The AI services might be unavailable or misconfigured. Please contact the administrator for assistance.",
+      needsReplan: false,
+    });
+  }
+});
+
+// Execution trace endpoint - Using LangGraph implementation
+app.post("/api/ai/trace", async (req, res) => {
+  try {
+    const { state } = req.body;
+
+    if (!state) {
+      return res.status(400).json({ error: "State object is required" });
+    }
+
+    // Use the execution trace generator
+    const trace = getExecutionTrace(state);
+
+    res.status(200).json({ trace });
+  } catch (error) {
+    console.error("Error generating execution trace:", error);
+    res.status(500).json({
+      error: "Failed to generate execution trace",
+      message: error instanceof Error ? error.message : "Unknown error",
     });
   }
 });

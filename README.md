@@ -1,4 +1,6 @@
-# 🌐 About Bitlook
+# Bitlook
+
+Bitcoin analytics and monitoring platform with AI-powered insights.
 
 ## 💡 Inspiration
 
@@ -14,6 +16,46 @@ Bitlook centralizes Bitcoin insights by offering:
 - Lightning wallet integration for instant transactions
 - Curated news and updates relevant to Bitcoin
 - AI-powered chatbot for on-demand Bitcoin education
+
+## Architecture
+
+This application is built with a client-server architecture:
+
+1. **Frontend**: React application with Vite, TypeScript, and Shadcn UI
+2. **Backend**: Express.js server that handles API requests and runs AI workflows
+
+The LangGraph agent has been moved to run server-side because it uses Node.js-specific features that aren't compatible with browser environments.
+
+## Running the Application
+
+### 1. Start the Server
+
+```bash
+cd server
+npm install  # Only needed first time
+node server.js
+```
+
+The server will start on port 3001 by default.
+
+### 2. Start the Frontend
+
+```bash
+npm install  # Only needed first time
+npm run dev
+```
+
+The frontend will be available at http://localhost:8081 (or another port if 8081 is in use).
+
+## API Endpoints
+
+The server exposes the following endpoints:
+
+- `GET /api/health` - Check server health
+- `GET /api/bitcoin-price` - Get current Bitcoin price
+- `GET /api/bitcoin-history` - Get historical Bitcoin price
+- `POST /api/ai/workflow` - Run the AI agent workflow
+- `POST /api/ai/trace` - Get a detailed execution trace
 
 ## 🛠️ How we built it
 
@@ -55,7 +97,17 @@ We used a modern full-stack approach:
 - Launch mobile support and browser extensions
 - Explore monetization through subscriptions and partnerships
 
-## Project Technical Info
+## Development Notes
+
+### Environment Variables
+
+Create a `.env` file in both the root directory and server directory with:
+
+```
+NEXT_PUBLIC_API_URL=http://localhost:3001
+```
+
+### Project Technical Info
 
 This project is built with:
 
