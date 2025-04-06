@@ -2,9 +2,36 @@ import express from "express";
 import cors from "cors";
 import axios from "axios";
 import dotenv from "dotenv";
+import { runWorkflow, getExecutionTrace } from "./langgraph/index.js";
 
 // Load environment variables
-dotenv.config();
+dotenv.config({ path: new URL("./.env", import.meta.url).pathname });
+
+// For development: Mock API integrations if API keys are not available
+const isDev = process.env.NODE_ENV !== "production";
+
+if (isDev) {
+  // Provide mock values for required API keys in development
+  if (
+    !process.env.OPENAI_API_KEY ||
+    process.env.OPENAI_API_KEY === "your_openai_api_key"
+  ) {
+    process.env.OPENAI_API_KEY = "sk-mock-key-for-development";
+    console.warn(
+      "⚠️ Using mock OpenAI API key. Some AI features will not work."
+    );
+  }
+
+  if (
+    !process.env.TAVILY_API_KEY ||
+    process.env.TAVILY_API_KEY === "your_tavily_api_key"
+  ) {
+    process.env.TAVILY_API_KEY = "tavily-mock-key-for-development";
+    console.warn(
+      "⚠️ Using mock Tavily API key. Search features will not work."
+    );
+  }
+}
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -149,46 +176,46 @@ app.get("/api/bitcoin-market-data", async (req, res) => {
   try {
     console.log("Fetching Bitcoin market data from Blockchain.com...");
     const startTime = Date.now();
-    
+
     // Get blockchain stats from Blockchain.com API
     const blockchainResponse = await axios.get(
       "https://api.blockchain.info/stats",
-      { 
+      {
         timeout: 10000, // 10 second timeout
         headers: {
-          'Accept': 'application/json'
-        }
+          Accept: "application/json",
+        },
       }
     );
-    
+
     // Get current Bitcoin price from mempool.space
     const priceResponse = await axios.get(
-      "https://mempool.space/api/v1/prices", 
+      "https://mempool.space/api/v1/prices",
       { timeout: 5000 }
     );
-    
+
     const endTime = Date.now();
     console.log(`APIs responded in ${endTime - startTime}ms`);
-    
+
     // Check if we have the expected data
     if (!blockchainResponse.data || !priceResponse.data) {
       console.error("Unexpected response format:", {
         blockchain: blockchainResponse.data,
-        price: priceResponse.data
+        price: priceResponse.data,
       });
       throw new Error("Invalid response format from APIs");
     }
-    
+
     // Extract data from responses
     const circulatingSupply = blockchainResponse.data.totalbc / 100000000; // Convert sats to BTC
     const priceUSD = priceResponse.data.USD;
-    
+
     // Calculate market cap (price * circulating supply)
     const marketCap = priceUSD * circulatingSupply;
-    
+
     // Get 24h volume from the stats (in USD)
     const volume24h = blockchainResponse.data.estimated_transaction_volume_usd;
-    
+
     const marketData = {
       price: priceUSD,
       market_cap: marketCap,
@@ -196,30 +223,30 @@ app.get("/api/bitcoin-market-data", async (req, res) => {
       circulating_supply: circulatingSupply,
       max_supply: 21000000, // Bitcoin's fixed supply cap
       price_change_percentage_24h: 0, // Not available in this API
-      price_change_percentage_7d: 0, // Not available in this API 
-      time: Math.floor(Date.now() / 1000)
+      price_change_percentage_7d: 0, // Not available in this API
+      time: Math.floor(Date.now() / 1000),
     };
-    
+
     console.log("Bitcoin market data successfully fetched");
     res.status(200).json(marketData);
   } catch (error) {
     console.error("Error fetching Bitcoin market data:", error);
-    
+
     // Provide more detailed error information
     const errorDetails = {
       error: "Failed to fetch Bitcoin market data",
       message: error.message,
-      code: error.code || 'UNKNOWN'
+      code: error.code || "UNKNOWN",
     };
-    
+
     if (error.response) {
       errorDetails.statusCode = error.response.status;
       errorDetails.statusText = error.response.statusText;
       errorDetails.data = error.response.data;
     }
-    
+
     console.error("Detailed error:", JSON.stringify(errorDetails, null, 2));
-    
+
     // Provide fallback data
     const fallbackData = {
       price: 65000,
@@ -230,13 +257,13 @@ app.get("/api/bitcoin-market-data", async (req, res) => {
       price_change_percentage_24h: 0,
       price_change_percentage_7d: 0,
       time: Math.floor(Date.now() / 1000),
-      isFallback: true
+      isFallback: true,
     };
-    
+
     // Send fallback data with a 200 status but include error info
     res.status(200).json({
       ...fallbackData,
-      _error: "Using fallback data due to API issues"
+      _error: "Using fallback data due to API issues",
     });
   }
 });
@@ -246,72 +273,72 @@ app.get("/api/bitcoin-supply", async (req, res) => {
   try {
     console.log("Fetching Bitcoin supply data from Blockchain.com...");
     const startTime = Date.now();
-    
-    const response = await axios.get(
-      "https://api.blockchain.info/stats",
-      { 
-        timeout: 10000, // 10 second timeout
-        headers: {
-          'Accept': 'application/json'
-        }
-      }
-    );
-    
+
+    const response = await axios.get("https://api.blockchain.info/stats", {
+      timeout: 10000, // 10 second timeout
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
     const endTime = Date.now();
     console.log(`Blockchain.com API responded in ${endTime - startTime}ms`);
-    
+
     // Check if we have the expected data
     if (!response.data || !response.data.totalbc) {
-      console.error("Unexpected response format from Blockchain.com:", response.data);
+      console.error(
+        "Unexpected response format from Blockchain.com:",
+        response.data
+      );
       throw new Error("Invalid response format from Blockchain.com API");
     }
-    
+
     // Convert satoshis to BTC
     const circulatingSupply = response.data.totalbc / 100000000;
-    
+
     // Bitcoin's max supply is fixed at 21 million
     const maxSupply = 21000000;
-    
+
     const supplyData = {
       circulating_supply: circulatingSupply,
       max_supply: maxSupply,
-      percent_mined: (circulatingSupply / maxSupply * 100).toFixed(2),
-      time: Math.floor(Date.now() / 1000)
+      percent_mined: ((circulatingSupply / maxSupply) * 100).toFixed(2),
+      time: Math.floor(Date.now() / 1000),
     };
-    
+
     console.log("Bitcoin supply data successfully fetched");
     res.status(200).json(supplyData);
   } catch (error) {
     console.error("Error fetching Bitcoin supply data:", error);
-    
+
     // Provide more detailed error information
     const errorDetails = {
       error: "Failed to fetch Bitcoin supply data",
       message: error.message,
-      code: error.code || 'UNKNOWN'
+      code: error.code || "UNKNOWN",
     };
-    
+
     if (error.response) {
       errorDetails.statusCode = error.response.status;
       errorDetails.statusText = error.response.statusText;
       errorDetails.data = error.response.data;
     }
-    
+
     console.error("Detailed error:", JSON.stringify(errorDetails, null, 2));
-    
+
     // Provide fallback data
     const fallbackData = {
       circulating_supply: 19500000,
       max_supply: 21000000,
       percent_mined: 92.85,
       time: Math.floor(Date.now() / 1000),
-      isFallback: true
+      isFallback: true,
     };
-    
+
     // Send fallback data with a 200 status but include error info
     res.status(200).json({
       ...fallbackData,
-      _error: "Using fallback data due to API issues"
+      _error: "Using fallback data due to API issues",
     });
   }
 });
@@ -600,6 +627,62 @@ app.get("/api/bitcoin-news", async (req, res) => {
     res.status(500).json({
       error: "Failed to fetch Bitcoin news",
       message: error.message,
+    });
+  }
+});
+
+// AI Agent workflow endpoint - Using LangGraph implementation
+app.post("/api/ai/workflow", async (req, res) => {
+  try {
+    const { input } = req.body;
+
+    if (!input) {
+      return res.status(400).json({ error: "Input is required" });
+    }
+
+    // Use the LangGraph workflow implementation
+    const result = await runWorkflow(input);
+
+    res.status(200).json(result);
+  } catch (error) {
+    console.error("Error running AI workflow:", error);
+    res.status(500).json({
+      error: "Failed to process request",
+      input: req.body.input || "",
+      plan: [],
+      pastSteps: [
+        [
+          "Error",
+          `The AI agent encountered an error: ${
+            error.message || "Unknown error"
+          }`,
+        ],
+      ],
+      response:
+        "I'm unable to process your request at the moment. The AI services might be unavailable or misconfigured. Please contact the administrator for assistance.",
+      needsReplan: false,
+    });
+  }
+});
+
+// Execution trace endpoint - Using LangGraph implementation
+app.post("/api/ai/trace", async (req, res) => {
+  try {
+    const { state } = req.body;
+
+    if (!state) {
+      return res.status(400).json({ error: "State object is required" });
+    }
+
+    // Use the execution trace generator
+    const trace = getExecutionTrace(state);
+
+    res.status(200).json({ trace });
+  } catch (error) {
+    console.error("Error generating execution trace:", error);
+    res.status(500).json({
+      error: "Failed to generate execution trace",
+      message: error instanceof Error ? error.message : "Unknown error",
     });
   }
 });

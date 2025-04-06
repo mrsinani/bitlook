@@ -3,30 +3,23 @@ import { planner, replanner } from "./planner.js";
 import { supervisorNode } from "./supervisor.js";
 import { researcherNode } from "./researcher.js";
 import { executorNode } from "./executor.js";
-import { PlanExecuteState, PlanExecuteStateType } from "./types.js";
+import { PlanExecuteState } from "./types.js";
 
 // Node to create an initial plan
-async function planStep(
-  state: PlanExecuteStateType
-): Promise<Partial<typeof PlanExecuteState.State>> {
+async function planStep(state) {
   const plan = await planner.invoke({ objective: state.input });
   return { plan: plan.steps, next: "supervisor" };
 }
 
 // Node to update the plan when needed
-async function replanStep(
-  state: PlanExecuteStateType
-): Promise<Partial<typeof PlanExecuteState.State>> {
-  const output = (await replanner.invoke({
+async function replanStep(state) {
+  const output = await replanner.invoke({
     input: state.input,
     plan: state.plan.join("\n"),
     pastSteps: state.pastSteps
       .map(([step, result]) => `${step}: ${result}`)
       .join("\n"),
-  })) as Array<{
-    type: string;
-    args?: { response?: string; steps?: string[] };
-  }>;
+  });
 
   const toolCall = output[0];
 
@@ -42,7 +35,7 @@ async function replanStep(
 }
 
 // Function to route after supervisor makes a decision
-function routeAfterSupervisor(state: PlanExecuteStateType) {
+function routeAfterSupervisor(state) {
   return state.next;
 }
 

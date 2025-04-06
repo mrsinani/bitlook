@@ -1,15 +1,11 @@
 import { workflow } from "./graph.js";
-import {
-  PlanExecuteStateType,
-  WorkflowResult,
-} from "./types.js";
 
 /**
  * Execute the agentic workflow with the given input
- * @param input The user's input/question
- * @returns The final result from the workflow
+ * @param {string} input The user's input/question
+ * @returns {Promise<object>} The final result from the workflow
  */
-export async function runWorkflow(input: string): Promise<WorkflowResult> {
+export async function runWorkflow(input) {
   try {
     // Initialize the state
     const state = {
@@ -25,7 +21,7 @@ export async function runWorkflow(input: string): Promise<WorkflowResult> {
 
     // Return the final state
     return result;
-  } catch (error: Error | unknown) {
+  } catch (error) {
     console.error("Workflow execution failed:", error);
 
     // Return a graceful error state that won't break the UI
@@ -38,7 +34,7 @@ export async function runWorkflow(input: string): Promise<WorkflowResult> {
           `The AI agent encountered an error: ${
             error instanceof Error ? error.message : "Unknown error"
           }`,
-        ] as [string, string],
+        ],
       ],
       response:
         "I'm unable to process your request at the moment. The AI services might be unavailable or misconfigured. Please contact the administrator for assistance.",
@@ -50,10 +46,10 @@ export async function runWorkflow(input: string): Promise<WorkflowResult> {
 
 /**
  * Get a human-readable trace of the workflow execution
- * @param state The final state from the workflow
- * @returns A formatted string showing the plan and execution steps
+ * @param {object} state The final state from the workflow
+ * @returns {string} A formatted string showing the plan and execution steps
  */
-export function getExecutionTrace(state: PlanExecuteStateType): string {
+export function getExecutionTrace(state) {
   try {
     let trace = `Input: ${state.input}\n\n`;
 
@@ -84,12 +80,8 @@ export function getExecutionTrace(state: PlanExecuteStateType): string {
     }
 
     return trace;
-  } catch (error: Error | unknown) {
+  } catch (error) {
     console.error("Error generating execution trace:", error);
     return "Error: Could not generate execution trace due to an unexpected error.";
   }
 }
-
-// Export types for client-side use
-export { PlanExecuteState } from "./types.js";
-export type { PlanExecuteStateType, WorkflowResult } from "./types.js";

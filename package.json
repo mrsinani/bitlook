@@ -5,10 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "server": "cross-env NODE_ENV=development tsx server/server.ts",
-    "server:dev": "cross-env NODE_ENV=development tsx watch server/server.ts",
-    "test-server": "cross-env NODE_ENV=development tsx server/test-server.ts",
-    "dev:full": "concurrently \"npm run dev\" \"npm run server:dev\"",
+    "server": "cross-env NODE_ENV=development node server/server.js",
+    "server:prod": "cross-env NODE_ENV=production node server/server.js",
+    "dev:full": "concurrently \"npm run dev\" \"npm run server\"",
     "build": "tsc && vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
